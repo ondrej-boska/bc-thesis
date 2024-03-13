@@ -1,3 +1,56 @@
-\chapter*{Introduction}
-\addcontentsline{toc}{chapter}{Introduction}
+\chapwithtoc{Introduction}
 
+\todo{Insert a paragraph - introduction of the thesis}
+
+\sectionwithtoc{Problem description}
+
+\todo{Insert a paragraph - define the problem}
+\todo{Reformulate the paragraphs below}
+
+The goal is to minimize the total operational cost of the buses
+\begin{equation}\label{eq:fitness}
+    \sum_{r \in S} ( f_b + o_{km_b} \cdot \sum_{i=1}^{|r|}d(s_{i-1},s_{i})) + \sum_{g \in groups} p_t \cdot t_g
+\end{equation}
+where $S$ is the solution, $r$ is a route within the solution, $b$ is the type of bus assigned to current route, $o_b$ is the operational cost of the bus per km, $d(s_1, s_2)$ is the distance between stops $s_1$ and $s_2$, $s_0$ and $s_n$ are the depot, $f_b$ is the one-time fee for using the bus, $p_t$ is the penalty constant for late arrival and $t_g$ is the group's delay.
+
+The following constraints must be satisfied:
+\begin{itemize}
+    \item Each group must be picked up and dropped off in a given time window.
+    \item Each group is handled by exactly one bus.
+    \item Each group must be picked up and dropped off by a bus exactly once and as a whole.
+    \item No group is larger than the capacity of the largest bus.
+    \item No bus carries more passengers than its capacity allows it to.
+\end{itemize}
+
+\sectionwithtoc{Input and output}
+
+\textbf{Input:}
+
+Input is divided into 3 parts.
+
+The first is a GeoJSON file described in a JSON Schema stored in the \textit{input\_schema.json} file. The file contains a FeatureCollection with two types of features:
+\begin{itemize}
+    \item A passenger group made of \textit{properties} and \textit{geometry}. Each group's properties include $id$ - unique identifier of the group (integer), $t_d$ - time of departure (integer, time from start of the simulation), and $no\_of\_passengers$ - number of passengers in the group (integer). Each group's geometry is a MultiPoint made of exactly 2 points - the first is the location of the group's departure and the second is the location of the group's destination.
+    \item The depot made of the depot's location (stored as a GeoJSON Point), id and available bus types - an array of objects containing $id$ - unique identifier of the bus type (integer), $capacity$ - capacity of the bus (integer), $operating\_cost$ - the operational cost of the bus per km (float) and $fixed\_cost$ - one-time fee for using the bus (float).
+\end{itemize}
+
+The second file is a CSV containing distances (in meters) for each pair of stops (the header consists of the stop's coordinates; the rest of the CSV is a square distance matrix).
+
+The third file is a CSV containing durations (in seconds) for traveling between each pair of stops (in the same format as the distances CSV).
+
+The distance and duration matrices are generated using the OSRM routing API \cite{luxen-vetter-2011}
+
+\textbf{Output:}
+
+\begin{itemize}
+    \item Output of the genetic algorithm: solution represented as a list of routes, where each route contains the order in which every group is picked up and dropped off.
+    \item Auxiliary Python script: converts the output of the genetic algorithm into a GeoJSON file for visualization and evaluation of the solution.
+\end{itemize}
+
+\sectionwithtoc{Fitness function}
+
+The fitness function is calculated by evaluating the equation~\eqref{eq:fitness}.
+
+The distances between stops will be stored in a matrix, where the distance between stop $s_1$ and $s_2$ is stored in $d[s_1][s_2]$.
+
+Depending on the individual's representation, the fitness function might need additional computation to be evaluated. For example, an unordered representation needs to be translated into an ordered representation, which is then evaluated.

@@ -28,6 +28,12 @@
 \addcontentsline{toc}{chapter}{#1}
 }
 
+% Similarly for section
+\def\sectionwithtoc#1{
+\section*{#1}
+\addcontentsline{toc}{section}{#1}
+}
+
 % Draw black "slugs" whenever a line overflows, so that we can spot it easily.
 \overfullrule=1mm
 
@@ -85,3 +91,9 @@
 %%% Various table goodies
 \newcommand{\pulrad}[1]{\raisebox{1.5ex}[0pt]{#1}}
 \newcommand{\mc}[1]{\multicolumn{1}{c}{#1}}
+
+%%% TODO
+\newcommand{\todo}[1]{%
+    \noindent
+    \textcolor{red}{TODO: #1}%
+}

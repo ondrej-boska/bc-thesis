@@ -1,0 +1,77 @@
+\chapter{Optimization}
+
+\section{Genetic algorithm}
+
+\todo{General description of the meta-heuristic}
+
+\subsection{Individual as routes of stops}
+
+\todo{Reformat, reformulate paragraphs below}
+
+\textbf{Coding of an individual:}
+
+List of routes, where each route is a list of stops in the order the bus visits them.
+
+\textbf{Fitness function:}
+
+The fitness evaluation is done in two steps. First, the operational cost is calculated by evaluating the length of each route, which is then multiplied by the operational cost of the bus, and the fixed cost of each bus is added. Then, customer satisfaction is calculated by performing a simulation of the routes and calculating the delay of each group. For every route, we simulate a bus trying to pick up and drop off the groups waiting at the stops. When the bus encounters the first group, it always picks it up on time and starts counting the simulation time since the group's departure. The bus can only pick up groups already waiting at the stop (their departure time is lower than the current simulation time).  
+The fitness is then the sum of the operational cost and the customer satisfaction.
+
+\textbf{Initial population:}
+
+\begin{itemize}
+    \item Random routes - given the number of buses and maximum length of each route, generate random routes for each bus.
+    \item Simple heuristic approach with fixed maximum bus count - adds to the route only those places where some group is waiting, or the bus can drop off the passengers.
+    \item Simple heuristic approach with variable bus count - creates the routes similarly to the fixed bus count approach but keeps adding routes to the solution until all groups are marked as handled.
+\end{itemize}
+
+\textbf{Selection:}
+
+Tournament selection
+
+\textbf{Crossover:}
+
+Randomly select one route from each solution and perform a one-point crossover on them.
+
+\textbf{Mutation:}
+
+Multiple possible mutations exist, each with a different probability of being chosen. The possible mutations are:
+\begin{itemize}
+    \item Reverse a random sub-route of a route.
+    \item Delete a random stop from a route.
+    \item Add a random stop to a route.
+    \item Change a city to a random one
+    \item Shuffle the routes within the solution (this might change how the simulation is performed)
+    \item "Smart" mutation - depending on the quality of the individual, it either adds a place not visited in any of the routes to a randomly chosen route (trying to maximize the number of groups picked up), completes a "coordinate pair" (i.\ e.\ adds a stop to the route where the bus can drop off the passengers) or it tries to perform a swap of a group between 2 routes.
+\end{itemize}
+
+\subsection{Individual as separate clustering and routing}
+
+\todo{Describe the approach in a similar manner as above (after the text above us updated)}
+
+\subsection{Individual as only clustering with heuristic routing}
+
+\todo{Describe the approach in a similar manner as above}
+
+\section{Ant Colony Optimization}
+
+\todo{General description of the meta-heuristic}
+
+\subsection{Generating solutions}
+
+\todo{Reformat, reformulate}
+
+\textbf{Coding of an individual:}
+The individual is represented as a list of routes, where each route is an ordered list of groups. Each group is represented twice, once for the pick-up and once for the drop-off. Each route implicitly starts and ends at the depot.
+
+\textbf{Pheromone matrix}
+The pheromone matrix is of size $2|G| \times 2|G| + 1$, where $G$ is the set of all groups. For each group with id $i$, the pheromone at index $2i - 1$ represents the probability of the group being picked up, and the pheromone at index $2i$ represents the likelihood of the group being dropped off. The last element of the matrix represents the probability of the bus moving to the depot (and thus ending its route).
+
+\textbf{Fitness function:}
+The fitness function is calculated similarly to the genetic algorithm approach, with the only difference being that the routes of the individual are now encoded as lists of groups (where each group is represented twice, once for the pick-up and once for the drop-off), rather than lists of stops.
+
+\textbf{Attractiveness:}
+An essential part of the ACO algorithm is the "attractiveness" - a simple heuristic value for each edge in the graph. Here, the attractiveness is calculated as the sum of the inverse of the distance and the inverse of the difference between the group's departure time and the time the bus arrives at the stop. Additionally, attractiveness is raised by a constant parameter value if the edge represents dropping off a group waiting in the bus (this tries to minimize the delays by dropping off groups as soon as possible). Also, when the attractiveness is calculated for the depot, it is raised by a parameter value (usually the length of the route multiplied by some parametric constant) to encourage the bus to return to the depot (and avoid making the routes too long).
+
+\textbf{Constructing new solutions:}
+For every ant, we generate a solution as a list of routes. Each route starts at the depot. At each stop, the set of available subsequent nodes is calculated as a union of pick-up nodes for groups not picked up by any bus yet and drop-off nodes for groups present in the bus. If there are no groups on the bus, the depot node is added to the set of available nodes instead (this ensures that the bus cannot end its route with passengers still onboard). Each probability is then calculated (as $pheromone^\alpha \cdot attractivness^\beta$), and the next stop is chosen using the roulette wheel selection. New routes are then constructed by repeating this process until all groups are handled.
