@@ -1,17 +1,10 @@
-export TEXINPUTS=../tex//:
+all: thesis.pdf abstract-cs.pdf abstract-en.pdf
 
-all: thesis.pdf abstract.pdf
-
-# LaTeX must be run multiple times to get references right
-thesis.pdf: thesis.tex $(wildcard *.tex) bibliography.bib thesis.xmpdata
-	pdflatex $<
-	bibtex thesis
-	pdflatex $<
-	pdflatex $<
-
-abstract.pdf: abstract.tex abstract.xmpdata
-	pdflatex $<
+%.pdf: force
+	latexmk $*.tex
 
 clean:
-	rm -f *.log *.dvi *.aux *.toc *.lof *.lot *.out *.bbl *.blg *.xmpi
-	rm -f thesis.pdf abstract.pdf
+	rm -rf aux
+	rm -f thesis.pdf abstract.pdf abstract-cs.pdf abstract-en.pdf
+
+.PHONY: force
