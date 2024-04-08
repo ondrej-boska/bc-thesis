@@ -1,0 +1,240 @@
+%\usepackage{listings}
+%\usepackage{xcolor}
+
+\colorlet{punct}{red!60!black}
+\definecolor{background}{HTML}{FCFCFC}
+\definecolor{delim}{RGB}{20,105,176}
+\colorlet{numb}{magenta!60!black}
+
+\lstdefinelanguage{json}{
+    basicstyle=\normalfont\ttfamily,
+    numbers=left,
+    numberstyle=\scriptsize,
+    stepnumber=1,
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    frame=lines,
+    backgroundcolor=\color{background},
+    literate=
+     *{0}{{{\color{numb}0}}}{1}
+      {1}{{{\color{numb}1}}}{1}
+      {2}{{{\color{numb}2}}}{1}
+      {3}{{{\color{numb}3}}}{1}
+      {4}{{{\color{numb}4}}}{1}
+      {5}{{{\color{numb}5}}}{1}
+      {6}{{{\color{numb}6}}}{1}
+      {7}{{{\color{numb}7}}}{1}
+      {8}{{{\color{numb}8}}}{1}
+      {9}{{{\color{numb}9}}}{1}
+      {:}{{{\color{punct}{:}}}}{1}
+      {,}{{{\color{punct}{,}}}}{1}
+      {\{}{{{\color{delim}{\{}}}}{1}
+      {\}}{{{\color{delim}{\}}}}}{1}
+      {[}{{{\color{delim}{[}}}}{1}
+      {]}{{{\color{delim}{]}}}}{1},
+}
+
+\begin{lstlisting}[language=json, caption={Input GeoJSON Schema}, label={lst:jsonschema}]
+{
+    "$schema": "http://json-schema.org/draft/2020-12/schema",
+    "$id": "input_data_json_schema",
+    "title": "(Geo)JSON Schema for the input data",
+    "description": "Defines the schema for the input data",
+    "type": "object",
+    "$defs": {
+        "depotPointGeometry": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "const": "Point"
+                },
+                "coordinates": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                }
+            },
+            "required": [
+                "type",
+                "coordinates"
+            ],
+            "description": "GeoJSON Point representing location of the depot"
+        },
+        "groupMultiPointGeometry": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "const": "MultiPoint"
+                },
+                "coordinates": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        },
+                        "minItems": 2,
+                        "maxItems": 2
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                }
+            },
+            "required": [
+                "type",
+                "coordinates"
+            ],
+            "description": "GeoJSON MultiPoint containing exactly 2 points, where the first point represents the origin of the group and the second point represents the destination of the group"
+        },
+        "busType": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "description": "Unique identifier for the bus type"
+                },
+                "capacity": {
+                    "type": "integer",
+                    "description": "Capacity of the bus type"
+                },
+                "operating_cost": {
+                    "type": "integer",
+                    "description": "Operating cost of the bus type per km"
+                },
+                "fixed_cost": {
+                    "type": "integer",
+                    "description": "Fixed cost of the bus type (paid only once per bus)"
+                }
+            },
+            "required": [
+                "id",
+                "capacity",
+                "operating_cost",
+                "fixed_cost"
+            ],
+            "description": "Describes a bus type available at a certain depot."
+        },
+        "groupProperties": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "const": "passenger_group"
+                },
+                "id": {
+                    "type": "integer",
+                    "description": "Unique identifier for the group"
+                },
+                "t_d": {
+                    "type": "integer",
+                    "description": "Time of departure for the passenger group (given in seconds since the start of the simulation)"
+                },
+                "no_of_passengers": {
+                    "type": "integer",
+                    "description": "Number of passengers in the group"
+                }
+            },
+            "required": [
+                "type",
+                "id",
+                "t_d",
+                "no_of_passengers"
+            ],
+            "description": "Describes a passenger group"
+        },
+        "depotProperties": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "const": "depot"
+                },
+                "id": {
+                    "type": "integer",
+                    "description": "Unique identifier for the depot"
+                },
+                "bus_types": {
+                    "type": "array",
+                    "description": "List of bus types available at the depot",
+                    "items": {
+                        "$ref": "#/$defs/busType"
+                    }
+                }
+            },
+            "required": [
+                "type",
+                "id",
+                "bus_types"
+            ],
+            "description": "Describes a depot"
+        },
+        "groupFeature": {
+            "title": "Group Feature",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "const": "Feature"
+                },
+                "geometry": {
+                    "$ref": "#/$defs/groupMultiPointGeometry"
+                },
+                "properties": {
+                    "$ref": "#/$defs/groupProperties"
+                }
+            },
+            "required": [
+                "type",
+                "geometry",
+                "properties"
+            ],
+            "description": "GeoJSON Feature representing a passenger group"
+        },
+        "depotFeature": {
+            "title": "Depot Feature",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "const": "Feature"
+                },
+                "geometry": {
+                    "$ref": "#/$defs/depotPointGeometry"
+                },
+                "properties": {
+                    "$ref": "#/$defs/depotProperties"
+                }
+            },
+            "required": [
+                "type",
+                "geometry",
+                "properties"
+            ],
+            "description": "GeoJSON Feature representing a depot"
+        }
+    },
+    "properties": {
+        "type": {
+            "const": "FeatureCollection"
+        },
+        "features": {
+            "type": "array",
+            "items": {
+                "anyOf": [
+                    {
+                        "$ref": "#/$defs/groupFeature"
+                    },
+                    {
+                        "$ref": "#/$defs/depotFeature"
+                    }
+                ]
+            }
+        }
+    },
+    "required": [
+        "type",
+        "features"
+    ]
+}
+}
+\end{lstlisting}

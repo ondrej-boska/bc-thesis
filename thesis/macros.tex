@@ -75,6 +75,11 @@
 \addcontentsline{toc}{section}{#1}
 }
 
+\def\subsectionwithtoc#1{
+\subsection*{#1}
+\addcontentsline{toc}{section}{#1}
+}
+
 % Draw black "slugs" whenever a line overflows, so that we can spot it easily.
 \overfullrule=1mm
 

@@ -127,7 +127,7 @@
 %%% Each chapter is kept in a separate file
 \include{preface}
 \include{01optimization}
-\include{02results}
+\include{02experiments.tex}
 
 \include{epilog}
 
@@ -144,6 +144,9 @@
 %%% Abbreviations used in the thesis, if any, including their explanation
 %%% In mathematical theses, it could be better to move the list of abbreviations to the beginning of the thesis.
 \chapwithtoc{List of Abbreviations}
+\begin{itemize}
+    \item \textbf{DARP} - Dial-A-Ride Problem
+\end{itemize}
 
 %%% Doctoral theses must contain a list of author's publications
 \ifx\ThesisType\TypePhD
@@ -163,6 +166,7 @@
 \appendix
 \chapter{Attachments}
 
-\section{First Attachment}
+\section{Input GeoJSON schema}
+\include{thesis/input_json_schema}
 
 \end{document}
