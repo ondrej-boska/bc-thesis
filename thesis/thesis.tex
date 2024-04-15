@@ -59,6 +59,7 @@
 \usepackage{amsmath}        % extensions for typesetting of math
 \usepackage{amsfonts}       % math fonts
 \usepackage{amsthm}         % theorems, definitions, etc.
+\usepackage{array}          % multicolumns
 \usepackage{bm}             % boldface symbols (\bm)
 \usepackage{booktabs}       % improved horizontal lines in tables
 \usepackage{caption}        % custom captions of floating objects
@@ -68,6 +69,7 @@
 \usepackage{indentfirst}    % indent the first paragraph of a chapter
 \usepackage[nopatch=item]{microtype}   % micro-typographic refinement
 \usepackage{paralist}       % improved enumerate and itemize
+\usepackage{subcaption}     % support for multiple images within one figure
 \usepackage[nottoc]{tocbibind} % makes sure that bibliography and the lists
 			    % of figures/tables are included in the table
 			    % of contents
@@ -126,8 +128,9 @@
 
 %%% Each chapter is kept in a separate file
 \include{preface}
-\include{01optimization}
-\include{02experiments.tex}
+\include{01problem}
+\include{02optimization}
+\include{03experiments}
 
 \include{epilog}
 
@@ -135,11 +138,11 @@
 \include{bibliography}
 
 %%% Figures used in the thesis (consider if this is needed)
-\listoffigures
+% \listoffigures
 
 %%% Tables used in the thesis (consider if this is needed)
 %%% In mathematical theses, it could be better to move the list of tables to the beginning of the thesis.
-\listoftables
+% \listoftables
 
 %%% Abbreviations used in the thesis, if any, including their explanation
 %%% In mathematical theses, it could be better to move the list of abbreviations to the beginning of the thesis.
@@ -166,7 +169,6 @@
 \appendix
 \chapter{Attachments}
 
-\section{Input GeoJSON schema}
 \include{thesis/input_json_schema}
 
 \end{document}

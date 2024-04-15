@@ -1,0 +1,76 @@
+\chapter{Problem description}
+
+\section{Input description}
+
+The following instance data define a problem instance.
+
+\begin{itemize}
+    \item Set of customer requests $R$, where every request consists of its unique identifier $id$, the earliest time of departure $t_d$ (number of seconds from the start of the simulation), group size (number of passengers in the group), coordinates of the group's departure location, and coordinates of the group's arrival location. The size of any group cannot exceed the capacity of the largest available bus.
+    \item The \textit{depot}, which consists of its coordinates, unique identifier $id$, and the \textit{bus type} available from the depot. The bus type must include the type's unique identifier $id$, the capacity of the bus $c$, the operational cost of the bus per kilometer $o$, and the one-time fee for using the bus $f$.
+    \item Distances between each point (in meters).
+    \item Travel times between each point (in seconds).
+\end{itemize}
+
+\xxx{There is no limit on how many buses are available to use from the depot.}
+
+\section{Solution} \label{sec:solution}
+
+The solution is a set of routes. Each route is given as a list of group indices in the order the bus handles their pick-ups and drop-offs.
+
+For a solution to be valid, the following constraints must hold.
+
+\begin{enumerate}[(1)]\label{constraints}
+    \setlength\itemsep{0pt}
+    \item Each group is handled by exactly one bus.
+    \item Each group must be picked up and dropped off by a bus exactly once and as a whole.
+    \item No bus carries more passengers than its capacity allows it to.
+\end{enumerate}
+
+This means that each group can appear in only one route. Each group's index must be included in its corresponding route \textit{exactly twice} - the first occurrence marks the pick-up, and the second occurrence marks the drop-off.
+
+Every route needs to start and end at the depot. Since only one is available, it is implicitly added to every route's beginning and end.
+
+\section{Objective function}
+\label{sec:objective}
+
+Since the goal is to minimize the costs, they form the foundation of the function. With $S$ being the solution, $r$ a route within the solution, $b_r$ the type of bus assigned to the route $r$, $f_{b_r}$ the one-time fee for using the bus, $o_{b_r}$ the operational cost of the bus per kilometer, $r_i$ the $i$th stop on the route and $d(r_i, r_j)$ the distance between stops $r_i$ and $r_j$ in kilometers, the total operational cost of the buses is given by the equation
+\begin{equation}\label{eq:objective_costs}
+    \text{operational cost} \equiv \sum_{r \in S} ( f_{b_r} + o_{b_r} \cdot \sum_{i=1}^{|r|}d(r_{i-1},r_{i}))
+\end{equation}
+
+
+We must also account for the group's \textit{delays} when evaluating a solution. The delay for each group is calculated as the sum of the group's departure time and the travel time between the group’s departure and destination points.
+
+We represent the ``satisfaction'' of the customers by the equation
+\begin{equation}\label{eq:objective_satisfaction}
+     \text{satisfaction cost} \equiv \sum_{g \in groups} p_t \cdot d_g^2
+\end{equation}
+where $p_t$ is the penalty constant for late arrival and $d_g$ is the group's delay. The group's delay is squared to penalize larger delays more. The penalty constant should depend on the priority of delivering all the customers as soon as possible at the expense of higher operational costs.
+
+The objective function is then the sum of the \textit{operational} and \textit{satisfaction} cost.
+
+\begin{equation}\label{eq:objective}
+    \sum_{r \in S} ( f_{b_r} + o_{b_r} \cdot \sum_{i=1}^{|r|}d(r_{i-1},r_{i})) + \sum_{g \in groups} p_t \cdot d_g^2
+\end{equation}
+
+\section{Input data generation}
+
+We create our own benchmark data to compare the algorithms presented in the thesis. We have two basic dataset types, \textit{random} and \textit{commute}.
+
+Given an OpenStreetMaps area, the number of requests to generate, the maximum size of a group in a request, and the latest possible departure time of a group, the \textit{random} generator creates requests where departure and destination coordinates are a randomly chosen public transport platform in the given area. The departure times and group sizes are chosen randomly. The number of platforms to sample from can be limited to force multiple customers to use the same platform for departure/destination. The depot is also randomly chosen from the available platforms, and the available bus type's \textit{capacity}, \textit{operational cost per km}, and \textit{fixed cost for usage} is given as a parameter.
+
+The \textit{commute} generator generates requests similarly to the \textit{random generator} but takes three OpenStreetMaps areas instead, an \textit{area from}, \textit{area to}, and a \textit{depot area}. The departure coordinates are randomly chosen platforms from \textit{area from}, and destination coordinates are randomly chosen platforms from \textit{area to}. The depot coordinates are randomly chosen from the platforms in the \textit{depot area}. We can also use a \textit{two-way} parameter, which makes the generator also generate requests from \textit{area to} to \textit{area from}. The departure times for both directions are still randomly generated based on the latest possible departure time.
+
+The customer requests are stored in \textit{GeoJSON} file, whose structure is described in detail in the attached \textit{JSON schema}.
+
+We must also generate the \textit{distance} and \textit{duration} matrices. We use the Open Source Routing Machine (\textit{OSRM}) API \cite{luxen-vetter-2011}, which has a \textit{table service} that can generate both matrices based on a list of coordinates. The matrices are stored in separate \textit{CSV} files.
+
+\iffalse
+
+\section{Stuff to sort}
+
+\begin{itemize}
+    \item Since \textit{DARP} is a real-world problem, we will make some simplifications to the problem to simplify the problem's simulation. We won't constrain or penalize route lengths (we can assume that the buses can refill fuel between stops with no time penalty). We will also mostly ignore most of the needs of the bus driver, such as compulsory time breaks after driving for a certain amount of time or having limited working hours. \xxx{Probably move to the introduction}
+\end{itemize}
+
+\fi
