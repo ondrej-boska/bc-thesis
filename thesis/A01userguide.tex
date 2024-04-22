@@ -1,0 +1,109 @@
+\chapter{User Guide}
+
+This section contains information needed to run the optimization.
+
+The software is divided into 3 separate parts:
+
+\begin{itemize}
+    \setlength\itemsep{0pt}
+    \item Data generation
+    \item Optimization algorithms
+    \item Results evaluation
+\end{itemize}
+
+\section{Prerequisites}
+
+For the \textit{data generation} and \textit{results evaluation} modules, the user needs
+\begin{itemize}
+    \setlength\itemsep{0pt}
+    \item a Python interpreter in version 3.11.9. Compatibility with different versions is not guaranteed. Libraries needed and their versions are listed in the \textit{requirements.txt} file. 
+    \item a running instance Open Source Routing Machine (OSRM) \cite{luxen-vetter-2011} service. The authors provide a demo server at \texttt{https://router.project-osrm.org}. If you want to host your own, the detailed steps on how to run the service are described in the project's repository \footnote{\url{https://github.com/Project-OSRM/osrm-backend}}. When generating the instance data in some given area, ensure the corresponding OpenStreetMaps extract is available for the OSRM service.
+\end{itemize}
+
+The \textit{optimization modules} requires a Julia programming language compiler. The program was tested on Julia versions 1.7.0 and 1.8.5. The packages needed are listed in the \textit{Project.toml} file. The correct environment should be installed by running Julia with the \texttt{--project} argument.
+
+\section{Generating New Instance Data}
+
+The Data used for running this thesis's experiments are available in the attachments. If you want to generate new data, two scripts are available: \textit{dataGeneratorRandom.py} and \textit{dataGeneratorCommute.py}. Both scripts can be configured using command line arguments, described in detail when running the script with \textit{--help}. Running the script generates a new folder with all the needed files: the \textit{GeoJSON} file with customer requests, \textit{CSV} file with the distance matrix, \textit{CSV} file with the duration matrix and a \textit{parameters.txt} file, where the settings of the generator are stored.
+
+The script assumes that the \textit{OSRM} service runs on your local machine. If your instance runs elsewhere, you can override this with the \texttt{--osrm\_url} option, e.g.
+
+\begin{lstlisting}[language=bash, breaklines=true]
+    python dataGeneratorCommute.py --osrm_url https://router.project-osrm.org
+\end{lstlisting}
+
+\section{Running the optimization algorithms}
+
+All the Julia source files are stored in the \textit{project} folder. Running the algorithms is done by the \textit{runner.jl} script. All the hyper-parameters and other algorithm configurations are stored in the \textit{config.jl} file together with their descriptions.
+
+The easiest way to run the program is with the following command:
+\begin{lstlisting}[language=bash]
+    julia runner.jl
+\end{lstlisting}
+
+The command compiles the program, loads the configuration from \textit{config.jl} and runs the optimization. If you want to override some configuration variables directly from the command line, you can enter key-value pairs \textit{variable=value} in the command. Some of the examples include:
+
+\begin{lstlisting}[language=bash, breaklines=true]
+    julia runner.jl algorithm=evolution_stops cross_prob=0.5 mut_prob=0.8 num_generations=20000
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash, breaklines=true]
+    julia runner.jl input_data_folder_path=my_data algorithm=aco number_of_runs=10 num_ants=10 num_iterations=10000
+\end{lstlisting}
+
+When the optimization finishes (by reaching maximum iterations or by exceeding the wall time), the runner stores in an output folder the following files:
+
+\begin{itemize}
+    \setlength\itemsep{0pt}
+    \item \textit{best\_solution.csv} with the overall best solution found.
+    \item \textit{config.yaml} with all the hyperparameter settings for the current run
+    \item \textit{run\_$i$.fits}, where $i$ is the run's id for each run, logging the current iteration, time, best fitness, and mean fitness of the population respectively. Used for creating plots and analyzing the algorithm's convergence. The frequency of the logging can be set in the configuration.
+\end{itemize}
+
+The most important configuration values include:
+
+\begin{itemize}
+    \setlength\itemsep{0pt}
+    \item \texttt{ALGORITHM} - which of the algorithms implemented is used for the optimization. Possible values are \textit{evolution\_stops}, \textit{evolution\_cr}, \textit{evolution\_heuristic} and \textit{aco}.
+    \item \texttt{INPUT\_DATA\_FOLDER\_PATH} - the folder with the instance data. When editing this value directly in the configuration file, example datasets are prepared in a \texttt{available\_datasets} dictionary.
+    \item \texttt{OUTPUT\_DATA\_FOLDER\_PATH} - folder where to store the results.
+    \item \texttt{LOGS\_PRINT\_FREQUENCY} - after how many iterations are the log files with best and mean fitnesses updated.
+    \item \texttt{NUMBER\_OF\_RUNS} - how many times will the algorithm run. All runs have a different random seed. Use the standard Julia \texttt{--threads} command line option to run the runs in parallel.
+    \item \texttt{RANDOM\_SEED} - random seed to use. As default, the seed is chosen randomly. If \texttt{NUMBER\_OF\_RUNS} is greater than one, each separate run has a seed of \texttt{NUMBER\_OF\_RUNS + RUN\_ID}. 
+    \item \texttt{WALL\_TIME} - stops the algorithm if it runs for too long. Given in seconds. 
+\end{itemize}
+
+\section{Parsing the results}
+
+After the optimization finishes, to analyze the results, the user can run the \textit{results\_parser.py script}.
+
+The standard way to run the script is with the following command:
+
+\begin{lstlisting}[language=bash]
+    python results_parser.py [-f results_root_folder] 
+\end{lstlisting}
+
+The script finds all the folders with outputs from the optimization algorithm within the given folder and creates the following files:
+
+\begin{itemize}
+    \setlength\itemsep{0pt}
+    \item \textit{report.txt} with basic statistics of the run's best solution, including the total costs, kilometers traveled, individual delays for each group, and the delay's mean and median.
+    \item \textit{routes.geojson} with the routes stored as \textit{LineStrings}. This file can be used with software like \textit{QGIS} to visualize the routes. The \textit{LineStrings} are generated using the \textit{OSRM} API.
+    \item \textit{routes.html} with more basic visualization of the routes made with the \textit{Folium} library.
+    \item Plots visualizing the progress of the best run and the mean fitness of all the runs. The plots are generated in 2 variants: with the x-axis representing generations and the x-axis representing time elapsed.
+\end{itemize}
+
+To compare multiple experiments and plot them in one figure, use the script with the \texttt{-c} option:
+
+\begin{lstlisting}[language=bash]
+    python results_parser.py -c [-f results_root_folder] 
+\end{lstlisting}
+
+With this option, the script finds all the output folders within the root folder and creates a comparison plot. Again, the plots are generated in 2 variants: with the x-axis representing generations and the x-axis representing time elapsed. The labels in the plot's legend can be set by creating a \textit{legend.txt} file in the experiment's results folder and storing the legend label in it.
+
+There are also \texttt{--xlog} and \texttt{--ylog} options available to set the x-axis or y-axis scale as logarithmic in the plots.
+
+Similarly to the data generation scripts, you can override the default \textit{OSRM} host address with the \texttt{--osrm\_url} option.
+
+
+

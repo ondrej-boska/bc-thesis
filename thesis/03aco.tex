@@ -1,0 +1,35 @@
+
+\chapter{Ant Colony Optimization}
+
+\xxx{General meta-heuristics description}
+
+The \textit{Ant Colony Optimization (ACO)} algorithm is a probabilistic optimization metaheuristic first presented by Dorigo and Stützle \cite{Dorigo2010}.
+
+The algorithm is based on the behavior of ants. When searching for food, multiple ants scatter around their anthill. They lay down small amounts of pheromone to remember the way back. If their search is successful, they return to the anthill while laying down a much stronger layer of pheromone to mark the path to the finding. Other ants can then follow this pheromone trail instead of searching randomly. This allows the ants to find the shortest paths to nearby food since the pheromone on longer paths evaporates more.
+
+The \textit{ACO} builds on this metaphor. Our \textit{ants} generate possible solutions by moving through the \textit{parameter space}. When they create a solution, they update the \textit{pheromone} stored in the \textit{pheromone matrix} based on the fitness value of their solution. When a new ant starts moving through the space, it can follow paths with more pheromones likely to provide better solutions.
+
+We represent our problem as an oriented graph - nodes are group pick-ups and drop-offs, and edges represent the traveling, e.g., the edge between the group's $i$ drop-off and the group's $j$ pick-up represents the path between the group's $i$ destination point and group's $j$ departure point. We must also add a node for the depot.
+
+The pheromone matrix is of size $2|G| \times 2|G| + 1$, where $G$ is the set of all groups. For each group with id $i$, the pheromone at index $i$ represents the probability of the group being picked up, and the pheromone at index $i + |G|$ represents the likelihood of the group being dropped off. We initialize it at the beginning of the algorithm uniformly with some small value given as a hyper-parameter.
+
+Each \textit{ant} needs to generate a solution. The solution is in the format described in section \ref{sec:solution}. The \textit{ant} generates routes until all the customer requests are handled. Every route starts at the depot. We then create a set of all possible moves: pick up some not-picked-up-yet group, drop off a group sitting in the bus, and, if the bus is empty, return to the depot. The probability of picking each solution is based on the amount of pheromone between the two nodes and the \textit{attractiveness} - a heuristic value.
+
+\xxx{Attractiveness}
+\xxx{Pheromone update}
+
+\iffalse
+
+\subsubsection*{Coding of an individual:}
+The individual is represented as a list of routes, where each route is an ordered list of groups. Each group is represented twice, once for the pick-up and once for the drop-off. Each route implicitly starts and ends at the depot.
+
+\subsubsection*{Pheromone matrix}
+The pheromone matrix is of size $2|G| \times 2|G| + 1$, where $G$ is the set of all groups. For each group with id $i$, the pheromone at index $2i - 1$ represents the probability of the group being picked up, and the pheromone at index $2i$ represents the likelihood of the group being dropped off. The last element of the matrix represents the probability of the bus moving to the depot (and thus ending its route).
+
+\subsubsection*{Attractiveness:}
+An essential part of the ACO algorithm is the "attractiveness" - a simple heuristic value for each edge in the graph. Here, the attractiveness is calculated as the sum of the inverse of the distance and the inverse of the difference between the group's departure time and the time the bus arrives at the stop. Additionally, attractiveness is raised by a constant parameter value if the edge represents dropping off a group waiting in the bus (this tries to minimize the delays by dropping off groups as soon as possible). Also, when the attractiveness is calculated for the depot, it is raised by a parameter value (usually the length of the route multiplied by some parametric constant) to encourage the bus to return to the depot (and avoid making the routes too long).
+
+\subsubsection*{Constructing new solutions:}
+For every ant, we generate a solution as a list of routes. Each route starts at the depot. At each stop, the set of available subsequent nodes is calculated as a union of pick-up nodes for groups not picked up by any bus yet and drop-off nodes for groups in the bus. If there are no groups on the bus, the depot node is added to the set of available nodes instead (this ensures that the bus cannot end its route with passengers still onboard). Each probability is then calculated (as $pheromone^\alpha \cdot attractivness^\beta$), and the next stop is chosen using the roulette wheel selection. New routes are then constructed by repeating this process until all groups are handled.
+
+\fi

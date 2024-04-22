@@ -129,8 +129,9 @@
 %%% Each chapter is kept in a separate file
 \include{preface}
 \include{01problem}
-\include{02optimization}
-\include{03experiments}
+\include{02genetic}
+\include{03aco}
+\include{04experiments}
 
 \include{epilog}
 
@@ -149,6 +150,11 @@
 \chapwithtoc{List of Abbreviations}
 \begin{itemize}
     \item \textbf{DARP} - Dial-A-Ride Problem
+    \item \textbf{OSRM} - Open Source Routing Machine
+    \item \textbf{EVO-STOPS} - Genetic algorithm implementation where the individual is encoded as a list of routes of stops
+    \item \textbf{EVO-CR} - Genetic algorithm implementation where the individual is encoded as separate clustering and routing
+    \item \textbf{EVO-HEURISTIC} - Genetic algorithm implementation where the individual represents only clustering and routing is done heuristically
+    \item \textbf{ACO} - Ant Colony Optimization
 \end{itemize}
 
 %%% Doctoral theses must contain a list of author's publications
@@ -167,8 +173,8 @@
 %%% should be uploaded to SIS. Allowed file formats are specified in provision
 %%% of the rector no. 72/2017. Exceptions can be approved by faculty's coordinator.
 \appendix
-\chapter{Attachments}
 
-\include{thesis/input_json_schema}
+\include{thesis/A01userguide}
+\include{thesis/A02developerdocs}
 
 \end{document}

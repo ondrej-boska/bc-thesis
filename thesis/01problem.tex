@@ -6,12 +6,11 @@ The following instance data define a problem instance.
 
 \begin{itemize}
     \item Set of customer requests $R$, where every request consists of its unique identifier $id$, the earliest time of departure $t_d$ (number of seconds from the start of the simulation), group size (number of passengers in the group), coordinates of the group's departure location, and coordinates of the group's arrival location. The size of any group cannot exceed the capacity of the largest available bus.
-    \item The \textit{depot}, which consists of its coordinates, unique identifier $id$, and the \textit{bus type} available from the depot. The bus type must include the type's unique identifier $id$, the capacity of the bus $c$, the operational cost of the bus per kilometer $o$, and the one-time fee for using the bus $f$.
+    \item The coordinates of the \textit{depot}
+    \item The \textit{bus type} available from the depot. The bus type must include the capacity of the bus $c$, the operational cost of the bus per kilometer $o$, and the one-time fee for using the bus $f$.
     \item Distances between each point (in meters).
     \item Travel times between each point (in seconds).
 \end{itemize}
-
-\xxx{There is no limit on how many buses are available to use from the depot.}
 
 \section{Solution} \label{sec:solution}
 
@@ -33,24 +32,24 @@ Every route needs to start and end at the depot. Since only one is available, it
 \section{Objective function}
 \label{sec:objective}
 
-Since the goal is to minimize the costs, they form the foundation of the function. With $S$ being the solution, $r$ a route within the solution, $b_r$ the type of bus assigned to the route $r$, $f_{b_r}$ the one-time fee for using the bus, $o_{b_r}$ the operational cost of the bus per kilometer, $r_i$ the $i$th stop on the route and $d(r_i, r_j)$ the distance between stops $r_i$ and $r_j$ in kilometers, the total operational cost of the buses is given by the equation
+Since the goal is to minimize the costs, they form the foundation of the function. With $S$ being the solution, $r$ a route within the solution, $r_i$ the $i$th stop on the route, and $d(r_i, r_j)$ the distance between stops $r_i$ and $r_j$ in kilometers, the total operational cost of the buses is given by the equation
 \begin{equation}\label{eq:objective_costs}
-    \text{operational cost} \equiv \sum_{r \in S} ( f_{b_r} + o_{b_r} \cdot \sum_{i=1}^{|r|}d(r_{i-1},r_{i}))
+    \text{operational cost} \equiv \sum_{r \in S} ( f + o \cdot \sum_{i=1}^{|r|}d(r_{i-1},r_{i}))
 \end{equation}
 
 
-We must also account for the group's \textit{delays} when evaluating a solution. The delay for each group is calculated as the sum of the group's departure time and the travel time between the group’s departure and destination points.
+We must also account for the group's \textit{delays} when evaluating a solution. The delay for each group is calculated as the difference between the time we drop the group off and the \textit{expected arrival time}, which is defined as the sum of the group's departure time and the travel time between the group’s departure and destination points.
 
 We represent the ``satisfaction'' of the customers by the equation
 \begin{equation}\label{eq:objective_satisfaction}
      \text{satisfaction cost} \equiv \sum_{g \in groups} p_t \cdot d_g^2
 \end{equation}
-where $p_t$ is the penalty constant for late arrival and $d_g$ is the group's delay. The group's delay is squared to penalize larger delays more. The penalty constant should depend on the priority of delivering all the customers as soon as possible at the expense of higher operational costs.
+where $p_t$ is the penalty constant for late arrival and $d_g$ is the group's delay. The group's delay is squared to penalize larger delays more. The penalty constant is a hyperparameter and depends on the priority of handling all the customers as soon as possible at the expense of higher operational costs.
 
 The objective function is then the sum of the \textit{operational} and \textit{satisfaction} cost.
 
 \begin{equation}\label{eq:objective}
-    \sum_{r \in S} ( f_{b_r} + o_{b_r} \cdot \sum_{i=1}^{|r|}d(r_{i-1},r_{i})) + \sum_{g \in groups} p_t \cdot d_g^2
+    \sum_{r \in S} ( f + o \cdot \sum_{i=1}^{|r|}d(r_{i-1},r_{i})) + \sum_{g \in groups} p_t \cdot d_g^2
 \end{equation}
 
 \section{Input data generation}
