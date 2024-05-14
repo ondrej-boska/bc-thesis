@@ -15,7 +15,7 @@ We present three different encodings of an individual:
 \begin{itemize}
     \item Individual as routes made of stops (EVO-STOPS)
     \item Individual as separate clustering and routing (EVO-CR)
-    \item Individual as only clustering, with routing solved with greedy heuristic (EVO-HEURISTIC)
+    \item Individual as only clustering, with routing solved with greedy heuristic (EVO-H)
 \end{itemize}
 
 Each encoding has its separate population initialization and genetic operators, described in detail in sections \ref{sec:evo-stops} to \ref{sec:evoh}. They share the fitness function, which is evaluated by transforming the individual into a solution and evaluating the objective function defined in \ref{eq:objective}.
@@ -71,7 +71,7 @@ The mapping is defined by an array, where the array indices represent the \texti
 
 The order of pick-ups and drop-offs is defined by an array, where every group occurs twice; the first occurrence marks the pick-up, and the second marks the drop-off.
 
-To transform an individual into a solution, for each route, we first determine which groups are handled by that route, and then we construct the route by picking the group's indices in the order they are present in the individual's order-defining array.
+To transform an individual into a solution, for each route, we first determine which groups are handled by that route, and then we construct the route by picking the group's indices in the order they are present in the individual's order-defining array. When constructing a route, if the capacity constraint would be violated by picking up the next group, we drop off groups with the earliest departure times until the bus has enough capacity to pick up the group.
 
 \subsection{Initial population}
 
@@ -113,7 +113,7 @@ We use a uniform crossover - for each of the two individuals, we go through the 
 
 The mutation swaps two random groups between their routes or assigns a random route to a random group.
 
-\section{Hyperparameters}
+\section{Hyperparameters}\label{sec:genetic_hyperparams}
 
 \subsection{Individual as routes of stops}
 
@@ -155,7 +155,7 @@ The rest of the hyper-parameter values were chosen similarly and are shown in th
         Reverse a route weight & \multicolumn{2}{c}{3} \\
         Add/Delete/Change a stop randomly weight & \multicolumn{2}{c}{9} \\
         Shuffle individual weight & \multicolumn{2}{c}{2} \\
-        Smart mutation maximum pick-up-drop-off distance & 4 & 50 \\
+        Smart mutation maximum pick-up-drop-off distance & 3 & 50 \\
     \end{tabular}
     \caption{Individual as stops - hyper-parameter settings}
     \label{tab:evo_stops_hyperparams}
@@ -171,7 +171,7 @@ The hyper-parameter settings for both \textit{random} and \textit{commute} datas
          & Random & Commute \\
         \hline
         Mutation probability & \multicolumn{2}{c}{0.8} \\
-        Crossover probability & 0.4 & 0.6 \\
+        Crossover probability & 0.3 & 0.5 \\
         Selection & \multicolumn{2}{c}{tournament ($t=2$)} \\
         Mutate route assignments probability & \multicolumn{2}{c}{0.5} \\
         Swap two groups between routes mutation probability & \multicolumn{2}{c}{0.5} \\

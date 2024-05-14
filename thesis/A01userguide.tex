@@ -20,13 +20,13 @@ For the \textit{data generation} and \textit{results evaluation} modules, the us
     \item a running instance Open Source Routing Machine (OSRM) \cite{luxen-vetter-2011} service. The authors provide a demo server at \texttt{https://router.project-osrm.org}. If you want to host your own, the detailed steps on how to run the service are described in the project's repository \footnote{\url{https://github.com/Project-OSRM/osrm-backend}}. When generating the instance data in some given area, ensure the corresponding OpenStreetMaps extract is available for the OSRM service.
 \end{itemize}
 
-The \textit{optimization modules} requires a Julia programming language compiler. The program was tested on Julia versions 1.7.0 and 1.8.5. The packages needed are listed in the \textit{Project.toml} file. The correct environment should be installed by running Julia with the \texttt{--project} argument.
+The \textit{optimization modules} requires a Julia programming language compiler. The program was tested on Julia versions 1.7.0 and 1.8.5. The packages needed are listed in the \textit{Project.toml} file. The correct environment should be installed by running Julia with the \texttt{-{}-project} argument.
 
 \section{Generating New Instance Data}
 
-The Data used for running this thesis's experiments are available in the attachments. If you want to generate new data, two scripts are available: \textit{dataGeneratorRandom.py} and \textit{dataGeneratorCommute.py}. Both scripts can be configured using command line arguments, described in detail when running the script with \textit{--help}. Running the script generates a new folder with all the needed files: the \textit{GeoJSON} file with customer requests, \textit{CSV} file with the distance matrix, \textit{CSV} file with the duration matrix and a \textit{parameters.txt} file, where the settings of the generator are stored.
+The Data used for running this thesis's experiments are available in the attachments. If you want to generate new data, two scripts are available: \textit{dataGeneratorRandom.py} and \textit{dataGeneratorCommute.py}. Both scripts can be configured using command line arguments, described in detail when running the script with \textit{-{}-help}. Running the script generates a new folder with all the needed files: the \textit{GeoJSON} file with customer requests, \textit{CSV} file with the distance matrix, \textit{CSV} file with the duration matrix and a \textit{parameters.txt} file, where the settings of the generator are stored.
 
-The script assumes that the \textit{OSRM} service runs on your local machine. If your instance runs elsewhere, you can override this with the \texttt{--osrm\_url} option, e.g.
+The script assumes that the \textit{OSRM} service runs on your local machine. If your instance runs elsewhere, you can override this with the \texttt{-{}-osrm\_url} option, e.g.
 
 \begin{lstlisting}[language=bash, breaklines=true]
     python dataGeneratorCommute.py --osrm_url https://router.project-osrm.org
@@ -68,7 +68,7 @@ The most important configuration values include:
     \item \texttt{INPUT\_DATA\_FOLDER\_PATH} - the folder with the instance data. When editing this value directly in the configuration file, example datasets are prepared in a \texttt{available\_datasets} dictionary.
     \item \texttt{OUTPUT\_DATA\_FOLDER\_PATH} - folder where to store the results.
     \item \texttt{LOGS\_PRINT\_FREQUENCY} - after how many iterations are the log files with best and mean fitnesses updated.
-    \item \texttt{NUMBER\_OF\_RUNS} - how many times will the algorithm run. All runs have a different random seed. Use the standard Julia \texttt{--threads} command line option to run the runs in parallel.
+    \item \texttt{NUMBER\_OF\_RUNS} - how many times will the algorithm run. All runs have a different random seed. Use the standard Julia \texttt{-{}-threads} command line option to run the runs in parallel.
     \item \texttt{RANDOM\_SEED} - random seed to use. As default, the seed is chosen randomly. If \texttt{NUMBER\_OF\_RUNS} is greater than one, each separate run has a seed of \texttt{NUMBER\_OF\_RUNS + RUN\_ID}. 
     \item \texttt{WALL\_TIME} - stops the algorithm if it runs for too long. Given in seconds. 
 \end{itemize}
@@ -101,9 +101,9 @@ To compare multiple experiments and plot them in one figure, use the script with
 
 With this option, the script finds all the output folders within the root folder and creates a comparison plot. Again, the plots are generated in 2 variants: with the x-axis representing generations and the x-axis representing time elapsed. The labels in the plot's legend can be set by creating a \textit{legend.txt} file in the experiment's results folder and storing the legend label in it.
 
-There are also \texttt{--xlog} and \texttt{--ylog} options available to set the x-axis or y-axis scale as logarithmic in the plots.
+There are also \texttt{-{}-xlog} and \texttt{-{}-ylog} options available to set the x-axis or y-axis scale as logarithmic in the plots.
 
-Similarly to the data generation scripts, you can override the default \textit{OSRM} host address with the \texttt{--osrm\_url} option.
+Similarly to the data generation scripts, you can override the default \textit{OSRM} host address with the \texttt{-{}-osrm\_url} option.
 
 
 
