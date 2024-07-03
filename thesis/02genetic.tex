@@ -1,6 +1,6 @@
-\chapter{Genetic algorithm}
+\chapter{Genetic algorithm}\label{ch:genetic}
 
-The concept of genetic algorithms to solve computationally hard problems was first presented by John Holland \cite{Holland:1975}. Starting with a \textit{population} formed with initial (in most cases random) solutions (called \textit{individuals}), \textit{crossover} and \textit{mutation} operators are applied to gradually improve the fitness score of the population and thus find the best individual overall.
+The concept of genetic algorithms to solve computationally hard problems was first presented by John Holland \cite{Holland:1992}. Starting with a \textit{population} formed with initial (in most cases random) solutions (called \textit{individuals}), \textit{crossover} and \textit{mutation} operators are applied to gradually improve the fitness score of the population and thus find the best individual overall.
 
 The most essential thing when designing a specific genetic algorithm is the encoding of an individual. Based on the encoding, we need to choose the genetic operators - \textit{crossover} and \textit{mutation}. The \textit{crossover} operator takes two random individuals (\textit{parents}) from the population and uses them to create two new individuals, which combine the properties of the parents. The \textit{mutation} operator takes only one individual and makes a change within him. The change should usually be small and can be either completely random or try to improve the individual using some heuristic (called a \textit{smart mutation}). The operators are performed on an individual or pair of individuals with a given probability (so in each generation, only some individuals participate in crossover or are mutated).
 
@@ -95,9 +95,28 @@ The individual comprises only the mapping between the groups and the routes, whi
 
 To convert an individual into a solution, we first divide the groups into routes based on the individual. The order in which we handle the groups within a route is then calculated based on a greedy space-time nearest neighbor heuristic described by Baugh et al. \cite{Baugh1998INTRACTABILITYOT}.
 
-The heuristic is based on assigning a \textit{cost} to each movement, which is calculated as a weighted sum of the travel time between the stops and the \textit{time window violation} - how much ``on time'' did we pick up/drop off passengers. We define the beginning of a group's \textit{time window} as the sum of the group's departure time and the travel time between departure and destination points. The time window end is then the sum of the travel time multiplied by a \textit{time window size} parameter and the group's departure time. The \textit{violation} is then calculated as how ``far'' we are from the time window in seconds.
+The heuristic is based on assigning a \textit{cost} to each movement, which is calculated as a weighted sum of the travel time between the stops and the
+\textit{time violation}. For pick-up nodes, the \textit{time violation} is the amount of time either the bus had to wait for the group or the group had to wait for the bus. For drop-off nodes, it is equal to the delay of the dropped-off group.
 
 When evaluating the route, we first find $d$ ``cheapest'' possible options to travel to, where $d$ is a heuristic depth parameter. We only choose those options that would not violate any constraints defined in the section \ref{sec:solution}. For each of the options, we then try to determine the cost of the resulting route if we choose this option. We do this by evaluating the cost of a route where, for $d$ stops, we would always choose the ``cheapest'' available option. Based on the costs of these routes, we then choose the best option overall. We then repeat this process until no options are available and all groups are picked up and dropped off.
+
+\begin{algorithm}
+\caption{Move cost between nodes i and j}
+\label{alg:evoh_move_cost}
+\begin{algorithmic}
+\Require $i, j, current\_time$
+\State $travel\_time \gets durations[i, j]$
+\State $arrival\_time \gets current\_time + travel\_time$
+\If{$j$ is a pick-up node}
+    \State $expected\_time \gets Group(j).departure\_time$
+\Else
+    \State $group\_duration \gets durations[Group(j).start, Group(j).end]$
+    \State $expected\_time \gets Group(j).departure\_time + group\_duration$
+\EndIf
+\State $tw\_viol \gets |arrival\_time - expected\_time|$
+\State \textbf{return} $w_{travel\_time} \cdot travel\_time + w_{time\_window} \cdot tw\_viol$
+\end{algorithmic}
+\end{algorithm}
 
 \subsection{Initial population}
 
@@ -138,24 +157,23 @@ The hyper-parameter values largely influence the behavior of the algorithm. We p
 \label{experiment_graph_description}
 We will describe the experiments on the population initialization function. For both dataset types, we conduct two experiments, one with \textit{greedy} initialization and one with \textit{random} initialization. Both datasets are made of 50 customer requests, with group sizes between 1 and 10 persons and departure times in a 2-hour window. Each experiment runs the genetic algorithm 10 times. In figure \ref{fig:evo1_create_ind}, for each experiment, the mean fitness of the 10 runs is depicted as the primary line, accompanied by the first and third quartiles represented as a translucent region. Both $x$ and $y$ axes are logarithmic.
 
-From the figure, we can see that for both datasets, the \textit{greedy} initialization resulted in faster convergence at the beginning. We therefore decided to use the \textit{greedy} initialization for both dataset types.
+From the figure, we can see that for both datasets, the \textit{greedy} initialization resulted in faster convergence at the beginning. We therefore decided to use the \textit{greedy} initialization.
 
 The rest of the hyper-parameter values were chosen similarly and are shown in the table \ref{tab:evo_stops_hyperparams}.
 
-\begin{table}[h]
+\begin{table}[ht]
     \centering
-    \begin{tabular}{lcc}
-         & Random & Commute \\
-        \hline
-        Mutation probability & \multicolumn{2}{c}{0.8} \\
-        Crossover probability & 0.3 & 0.1 \\
-        Selection & \multicolumn{2}{c}{tournament ($t=2$)} \\
-        Create individual function & \multicolumn{2}{c}{greedy} \\
-        Smart mutation weight & \multicolumn{2}{c}{12} \\
-        Reverse a route weight & \multicolumn{2}{c}{3} \\
-        Add/Delete/Change a stop randomly weight & \multicolumn{2}{c}{9} \\
-        Shuffle individual weight & \multicolumn{2}{c}{2} \\
-        Smart mutation maximum pick-up-drop-off distance & 3 & 50 \\
+    \begin{tabular}{lc}
+        Mutation probability & 0.8 \\
+        Crossover probability & 0.2 \\
+        Selection & tournament ($t=2$) \\
+        Population size & 40 \\
+        Create individual function & greedy \\
+        Smart mutation weight & 12 \\
+        Reverse a route weight & 3 \\
+        Add/Delete/Change a stop randomly weight & 9 \\
+        Shuffle individual weight & 2 \\
+        Smart mutation maximum pick-up-drop-off distance & 20 \\
     \end{tabular}
     \caption{Individual as stops - hyper-parameter settings}
     \label{tab:evo_stops_hyperparams}
@@ -163,19 +181,18 @@ The rest of the hyper-parameter values were chosen similarly and are shown in th
 
 \subsection{Individual as separate clustering and routing}
 
-The hyper-parameter settings for both \textit{random} and \textit{commute} dataset types were chosen experimentally and are shown in the table \ref{tab:evo_cr_hyperparams}.
+The hyper-parameter settings for both dataset types were chosen experimentally and are shown in the table \ref{tab:evo_cr_hyperparams}.
 
-\begin{table}[h]
+\begin{table}[ht]
     \centering
-    \begin{tabular}{lcc}
-         & Random & Commute \\
-        \hline
-        Mutation probability & \multicolumn{2}{c}{0.8} \\
-        Crossover probability & 0.3 & 0.5 \\
-        Selection & \multicolumn{2}{c}{tournament ($t=2$)} \\
-        Mutate route assignments probability & \multicolumn{2}{c}{0.5} \\
-        Swap two groups between routes mutation probability & \multicolumn{2}{c}{0.5} \\
-        Reverse a part of the order array mutation probability & \multicolumn{2}{c}{0.7} \\ 
+    \begin{tabular}{lc}
+        Mutation probability & 0.8 \\
+        Crossover probability & 0.4 \\
+        Selection & tournament ($t=2$) \\
+        Population size & 30 \\
+        Mutate route assignments probability & 0.5 \\
+        Swap two groups between routes mutation probability & 0.5 \\
+        Reverse a part of the order array mutation probability & 0.7 \\ 
     \end{tabular}
     \caption{Individual as cluster and route - hyper-parameter settings}
     \label{tab:evo_cr_hyperparams}
@@ -183,21 +200,19 @@ The hyper-parameter settings for both \textit{random} and \textit{commute} datas
 
 \subsection{Individual as only clustering with heuristic routing}
 
-The hyper-parameter settings for both \textit{random} and \textit{commute} dataset types were chosen experimentally and are shown in the table \ref{tab:evo_ch_hyperparams}.
+The hyper-parameter settings for both dataset types were chosen experimentally and are shown in the table \ref{tab:evo_ch_hyperparams}.
 
 \begin{table}[ht]
     \centering
-    \begin{tabular}{lcc}
-         & Random & Commute \\
-        \hline
-        Mutation probability & \multicolumn{2}{c}{0.8} \\
-        Crossover probability & \multicolumn{2}{c}{0.3} \\
-        Selection & \multicolumn{2}{c}{tournament ($t=3$)} \\
-        Travel time weight in heuristic cost & 1 & 2 \\
-        Time window violation weight in heuristic cost & 2 & 1 \\
-        Time window size & 0.01 & 0.1 \\
-        Uniform crossover switch assignment probability & \multicolumn{2}{c}{0.2} \\
-        Swap two groups between routes mutation probability & \multicolumn{2}{c}{0.5} \\
+    \begin{tabular}{lc}
+        Mutation probability & 0.8 \\
+        Crossover probability & 0.3 \\
+        Selection & tournament ($t=3$) \\
+        Population size & 20 \\
+        Travel time weight in heuristic cost & 1 \\
+        Time window violation weight in heuristic cost & 2 \\
+        Uniform crossover switch assignment probability & 0.2 \\
+        Swap two groups between routes mutation probability & 0.5 \\
     \end{tabular}
     \caption{Individual as only clustering with heuristic routing - hyper-parameter settings}
     \label{tab:evo_ch_hyperparams}

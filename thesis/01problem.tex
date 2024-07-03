@@ -1,5 +1,4 @@
-\chapter{Problem description}
-
+\chapter{Problem description}\label{ch:problem}
 \section{Input description}
 
 The following instance data define a problem instance.
@@ -54,11 +53,11 @@ The objective function is then the sum of the \textit{operational} and \textit{s
 
 \section{Input data generation}
 
-We create our own benchmark data to compare the algorithms presented in the thesis. We have two basic dataset types, \textit{random} and \textit{commute}.
+We create our own benchmark data to compare the algorithms presented in the thesis. We have two basic dataset types, \textit{uniformly distributed} and \textit{commute}.
 
-Given an OpenStreetMaps area, the number of requests to generate, the maximum size of a group in a request, and the latest possible departure time of a group, the \textit{random} generator creates requests where departure and destination coordinates are a randomly chosen public transport platform in the given area. The departure times and group sizes are chosen randomly. The number of platforms to sample from can be limited to force multiple customers to use the same platform for departure/destination. The depot is also randomly chosen from the available platforms, and the available bus type's \textit{capacity}, \textit{operational cost per km}, and \textit{fixed cost for usage} is given as a parameter.
+Given an OpenStreetMaps area, the number of requests to generate, the maximum size of a group in a request, and the latest possible departure time of a group, the \textit{uniformly distributed} generator creates requests where departure and destination coordinates are a randomly chosen public transport platform in the given area. The departure times and group sizes are chosen randomly. The number of platforms to sample from can be limited to force multiple customers to use the same platform for departure/destination. The depot is also randomly chosen from the available platforms, and the available bus type's \textit{capacity}, \textit{operational cost per km}, and \textit{fixed cost for usage} is given as a parameter.
 
-The \textit{commute} generator generates requests similarly to the \textit{random generator} but takes three OpenStreetMaps areas instead, an \textit{area from}, \textit{area to}, and a \textit{depot area}. The departure coordinates are randomly chosen platforms from \textit{area from}, and destination coordinates are randomly chosen platforms from \textit{area to}. The depot coordinates are randomly chosen from the platforms in the \textit{depot area}. We can also use a \textit{two-way} parameter, which makes the generator also generate requests from \textit{area to} to \textit{area from}. The departure times for both directions are still randomly generated based on the latest possible departure time.
+The \textit{commute} generator generates requests similarly to the \textit{uniformly distributed generator} but takes three OpenStreetMaps areas instead, an \textit{area from}, \textit{area to}, and a \textit{depot area}. The departure coordinates are randomly chosen platforms from \textit{area from}, and destination coordinates are randomly chosen platforms from \textit{area to}. The depot coordinates are randomly chosen from the platforms in the \textit{depot area}. We can also use a \textit{two-way} parameter, which makes the generator also generate requests from \textit{area to} to \textit{area from}. The departure times for both directions are still randomly generated based on the latest possible departure time.
 
 The customer requests are stored in \textit{GeoJSON} file, whose structure is described in detail in the attached \textit{JSON schema}.
 
