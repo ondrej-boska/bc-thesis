@@ -13,14 +13,14 @@ The software is divided into 3 separate parts:
 
 \section{Prerequisites}
 
-For the \textit{data generation} and \textit{results evaluation} modules, the user needs
+For the \textit{data generation} and \textit{results evaluation} scripts, the user needs
 \begin{itemize}
     \setlength\itemsep{0pt}
-    \item a Python interpreter in version 3.11.9. Compatibility with different versions is probable, but not guaranteed. Libraries needed and their versions are listed in the \textit{requirements.txt} file. 
-    \item a running instance Open Source Routing Machine (OSRM) \cite{luxen-vetter-2011} service. The authors provide a demo server at \texttt{https://router.project-osrm.org}. If you want to host your own, the detailed steps on how to run the service are described in the project's repository \footnote{\url{https://github.com/Project-OSRM/osrm-backend}}. When generating the instance data in some given area, ensure the corresponding OpenStreetMaps extract is available for the OSRM service.
+    \item a Python interpreter in version 3.11.9. Compatibility with different versions is probable but not guaranteed. The libraries needed and their versions are listed in the \textit{requirements.txt} file. 
+    \item a running instance of Open Source Routing Machine (OSRM) \cite{luxen-vetter-2011} service. The authors provide a demo server at \texttt{https://router.project-osrm.org}. To host the service, a \textit{Makefile} with \texttt{prepare-server} and \texttt{run-server} targets is prepared in the \textit{osrm} folder in the project files.
 \end{itemize}
 
-The \textit{optimization modules} requires a Julia programming language compiler. The program was tested on Julia versions 1.7.0 and 1.8.5. The packages needed are listed in the \textit{Project.toml} file. The correct environment should be installed by running Julia with the \texttt{-{}-project} argument.
+The \textit{optimization modules} requires a Julia programming language compiler. The program was tested on Julia versions 1.7, 1.8 and 1.9. The packages needed are listed in the \textit{Project.toml} file. The correct environment should be installed by running Julia with the \texttt{-{}-project} argument.
 
 \section{Generating New Instance Data}
 
@@ -33,6 +33,8 @@ The script assumes that the \textit{OSRM} service runs on your local machine. If
 \end{lstlisting}
 
 The coordinates used are sampled from public transport platforms in the given area. Note that when generating larger datasets, there must be enough unique platforms to use in that area. If the number of available platforms is lower than what is needed to sample, the generators exit with an error.
+
+The bus type(s) available from the depot are hardcoded in the script. Either change them in the code or afterwards in the generated \textit{GeoJSON} file.
 
 \section{Running the optimization algorithms}
 
@@ -69,7 +71,7 @@ The most important configuration values include the following.
 \begin{itemize}
     \setlength\itemsep{0pt}
     \item \texttt{algorithm} - which of the algorithms implemented is used for the optimization. Possible values are \textit{evolution\_stops}, \textit{evolution\_cr}, \textit{evolution\_heuristic} and \textit{aco}.
-    \item \texttt{input\_data\_folder} - the folder with the instance data. Example datasets are prepared in a \texttt{available\_datasets} dictionary and can be selected by the \textit{chosen\_dataset} parameter.
+    \item \texttt{input\_data\_folder} - the folder with the instance data. Example datasets are prepared in a \texttt{available\_datasets} dictionary and can be selected by the \textit{chosen\_dataset} parameter. To create valid instance data, use one of the data generators attached. If you want to create your own dataset, it must be stored in a folder containing three files: \textit{data.geojson} file with the customer requests, \textit{distances.csv} file with the distances in meters for all coordinate pairs and \textit{distances.csv} file with the durations in seconds for all the coordinate pairs. The \textit{GeoJSON} file must conform to the JSON schema in Figure~\ref{fig:input_json_schema}.
     \item \texttt{output\_data\_folder} - folder where to store the results.
     \item \texttt{logs\_frequency} - after how many iterations are the log files with best and mean fitnesses updated.
     \item \texttt{number\_of\_runs} - how many times will the algorithm run. All runs have a different random seed. Use the standard Julia \texttt{-{}-threads} command line option to run the runs in parallel.
@@ -77,37 +79,52 @@ The most important configuration values include the following.
     \item \texttt{wall\_time} - stops the algorithm if it runs for too long. Given in seconds. 
 \end{itemize}
 
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{img/input_schema_diagram.png}
+    \caption{Input GeoJSON schema visualization}
+    \label{fig:input_json_schema}
+\end{figure}
+
 \section{Parsing the results}
 
-After the optimization finishes, the user can run the \textit{results\_parser.py script} to analyze the results.
+After the optimization finishes, the user can run the \textit{resultsParser.py} script to analyze the results.
 
 The standard way to run the script is with the following command:
 
 \begin{lstlisting}[language=bash]
-    python results_parser.py [-f results_root_folder] 
+    python resultsParser.py [-f root_folder] [--visualize]
 \end{lstlisting}
 
-The script finds all the folders with outputs from the optimization algorithm within the given folder and creates the following files:
+The script finds all folders with output from the optimization algorithm within the given folder and creates the following files:
 
 \begin{itemize}
     \setlength\itemsep{0pt}
     \item \textit{report.txt} with basic statistics of the run's best solution, including the total costs, kilometers traveled, individual delays for each group, and the delay's mean and median.
-    \item \textit{routes.geojson} with the routes stored as \textit{LineStrings}. This file can be used with software like \textit{QGIS} to visualize the routes. The \textit{LineStrings} are generated using the \textit{OSRM} API.
-    \item \textit{routes.html} with more basic visualization of the routes made with the \textit{Folium} library.
-    \item Plots visualizing the progress of the best run and the mean fitness of all the runs. The plots are generated in 2 variants: with the x-axis representing generations and the x-axis representing time elapsed.
+    \item Plots visualizing the progress of the best run and the mean fitness of all the runs. The x-axis in the plots represents the number of generations, and the y-axis represents the fitness.
 \end{itemize}
 
-To compare multiple experiments and plot them in one figure, use the script with the \texttt{-c} option:
+If the \texttt{-v} or \texttt{-{}-visualize} option is used, the script also generates the following files. This option requires the \textit{OSRM} service to be running.
+
+\begin{itemize}
+    \setlength\itemsep{0pt}
+    \item \textit{routes.geojson} with the routes stored as \textit{LineStrings}. This file can be used with software like \textit{QGIS} to visualize the routes.
+    \item \textit{routes.html} with more basic visualization of the routes made with the \textit{Folium} library.
+\end{itemize}
+
+To compare multiple experiments and plot them in one figure, use the script with the \texttt{-c} or \texttt{-{}-compare} option:
 
 \begin{lstlisting}[language=bash]
-    python results_parser.py -c [-f results_root_folder] 
+    python resultsParser.py -c [-f results_root_folder] 
 \end{lstlisting}
 
 With this option, the script finds all the output folders within the root folder and creates a comparison plot. Again, the plots are generated in 2 variants: with the x-axis representing generations and the x-axis representing time elapsed. The labels in the plot's legend can be set by creating a \textit{legend.txt} file in the experiment's results folder and storing the legend label in it.
 
-There are also \texttt{-{}-xlog} and \texttt{-{}-ylog} options available to set the x-axis or y-axis scale as logarithmic in the plots. For larger experiments, to reduce the size of the plots, the user can use a \texttt{-{}-compress} option.
+There are also \texttt{-{}-xlog} and \texttt{-{}-ylog} options available to set the x-axis or y-axis scale as logarithmic in the plots. For larger experiments, to reduce the size of the plots, the user can use a \texttt{-{}-compress} option. With this option, only points where the fitness has changed are plotted.
 
-Similarly to the data generation scripts, the default \textit{OSRM} host address can be overridden with the \texttt{-{}-osrm\_url} option.
+Similarly to data generation scripts, the default \textit{OSRM} host address can be overridden with the \texttt{-{}-osrm\_url} option.
+
+The project also includes two small scripts to help analyze the results. The \textit{separateCarsDistance.py} script takes 2 command line arguments, a path to a dataset and an output folder, and returns the distances between every group's departure and destination point, and the sum of all the distances. The \textit{greedySpaceTimeHeuristic.py} takes the same 2 command line arguments, as well as additional \texttt{-{}-max\_delay}, \texttt{-{}-travel\_time\_weight} and \texttt{-{}-time\_viol\_weight} arguments. It uses a simple and naive greedy heuristic to find a solution for a given dataset. The heuristic is described in~\ref{experiments-greedy}
 
 
 
