@@ -246,3 +246,100 @@ author = {Sin C. Ho and W.Y. Szeto and Yong-Hong Kuo and Janny M.Y. Leung and Ma
 keywords = {Dial-a-ride, Heuristics, Exact methods, Survey, Share-a-ride, Pickup, Delivery},
 abstract = {There has been a resurgence of interest in demand-responsive shared-ride systems, motivated by concerns for the environment and also new developments in technologies which enable new modes of operations. This paper surveys the research developments on the Dial-A-Ride Problem (DARP) since 2007. We provide a classification of the problem variants and the solution methodologies, and references to benchmark instances. We also present some application areas for the DARP, discuss some future trends and challenges, and indicate some possible directions for future research.}
 }
+
+@article{surveytransport,
+author = {Díaz-Parra, Ocotlán and Ruiz-Vanoye, Jorge and Bernábe Loranca, María Beatríz and Fuentes-Penna, Alejandro and Barrera-Cámara, Ricardo A.},
+year = {2014},
+month = {03},
+pages = {},
+title = {A Survey of Transportation Problems},
+volume = {2014},
+journal = {Journal of Applied Mathematics},
+doi = {10.1155/2014/848129}
+}
+
+@article{surveytsp,
+title = {The traveling salesman problem: An overview of exact and approximate algorithms},
+journal = {European Journal of Operational Research},
+volume = {59},
+number = {2},
+pages = {231-247},
+year = {1992},
+issn = {0377-2217},
+doi = {https://doi.org/10.1016/0377-2217(92)90138-Y},
+url = {https://www.sciencedirect.com/science/article/pii/037722179290138Y},
+author = {Gilbert Laporte},
+keywords = {Traveling salesman problem, survey},
+abstract = {In this paper, some of the main known algorithms for the traveling salesman problem are surveyed. The paper is organized as follows: 1) definition; 2) applications; 3) complexity analysis; 4) exact algorithms; 5) heuristic algorithms; 6) conclusion.}
+}
+
+@phdthesis{darpmunk,
+title = "Dial-a-Ride",
+abstract = "The Dial-a-Ride problem is a Vehicle Routing problem in its most general form. The problem was formulated in the beginning of the 1970's and since then a large number of researchers have worked on developing efficient algorithms for use in automated planning of Dial-a-Ride transportation systems. In a Dial-a-Ride transportation system, passengers request a trip between two stops with either a desired time of departure from the pickup stop or a desired time of arrival at the destination. The time windows at the stops are then calculated by the operator based on additional parameters such as maximum excess ride time and allowed deviation from desired service time. All vehicles start and end at a depot, which can be different for each vehicle. The fleet of vehicles is heterogeneous meaning the vehicles can have a different capacity of passenger seats, wheelchairs and beds. The problem is then an extension of the Capacitated Vehicle Routing Problem with Time Windows (CVRPTW) with the additional constraints that a pickup stop must precede a delivery stop for a passenger, and that both a pickup stop and a delivery stop related to the same passenger must be assigned to the same vehicle. The objective is to minimize the cost of operation similar to the objective for the CVRPTW, with the extension that the level of service to the passengers is considered. Several algorithms for solving the Dial-a-Ride problem have been proposed in the litterature. Because of the complexity of the Dial-a-Ride problem, most methods described in the litterature are based on various insertion techniques often coupled with some sort of clustering of stops, but since 1980 some experiments have been performed with dynamic programming, column generation and set partitioning. In recent years meta heuristics have also been applied to the problem. The metod used in this thesis is based on a clustering first insertion second technique developed at CRT in Canada in the mid 1980's. The algorithm is extended to include constraints imposed by a practical Dial-a-Ride problem at a Danish transportation operator. These constraints are mainly related to a generalization of capacity to include substitution of seats to wheelchairs and beds, but also extensions to the objective to give a better view of passenger comfort are included. To enable practical use of the algorithm, it is incorporated in the developed user interface and linked with a digitized road network. The user interface is developed as generically as possible making it reuseable in all sorts of Vehicle Routing problems. The foundation of the user interface is a database for storing customers, requests, routes etc. The digitized road map is included in the developed software by use of MapX, which is a program developed and sold by MapInfo Corporation. MapX handles the visualization of the map layers, selections, and labels. The road network is read from MapX into a different network structure in memory to allow for a more intelligent calculation of shortest path between stops and vehicle positions. Unfortunately data from actual Dial-a-Ride transportation systems is not readily available, so tests are based on data generated in this project. While the algorithm performs as expected, other results such as the stable performance of the different modules in the developed software and the developement of a practical setting for solving the Dial-a-Ride problem are equally important.",
+author = "J{\o}rgensen, {Rene Munk}",
+year = "2003",
+month = oct,
+language = "English",
+isbn = "87-91137-10-1",
+school = "Technical University of Denmark",
+}
+
+@article{branchandcutcordeau,
+author = {Cordeau, Jean-Fran\c{c}ois},
+title = {A Branch-and-Cut Algorithm for the Dial-a-Ride Problem},
+journal = {Operations Research},
+volume = {54},
+number = {3},
+pages = {573-586},
+year = {2006},
+doi = {10.1287/opre.1060.0283},
+URL = {https://doi.org/10.1287/opre.1060.0283},
+eprint = { https://doi.org/10.1287/opre.1060.0283},
+abstract = { In the dial-a-ride problem, users formulate requests for transportation from a specific origin to a specific destination. Transportation is carried out by vehicles providing a shared service. The problem consists of designing a set of minimum-cost vehicle routes satisfying capacity, duration, time window, pairing, precedence, and ride-time constraints. This paper introduces a mixed-integer programming formulation of the problem and a branch-and-cut algorithm. The algorithm uses new valid inequalities for the dial-a-ride problem as well as known valid inequalities for the traveling salesman, the vehicle routing, and the pick-up and delivery problems. Computational experiments performed on randomly generated instances show that the proposed approach can be used to solve small to medium-size instances.}
+}
+
+@article{tabucordeau,
+title = {A tabu search heuristic for the static multi-vehicle dial-a-ride problem},
+journal = {Transportation Research Part B: Methodological},
+volume = {37},
+number = {6},
+pages = {579-594},
+year = {2003},
+issn = {0191-2615},
+doi = {https://doi.org/10.1016/S0191-2615(02)00045-0},
+url = {https://www.sciencedirect.com/science/article/pii/S0191261502000450},
+author = {Jean-François Cordeau and Gilbert Laporte},
+keywords = {Dial-a-ride problem, Door-to-door transportation, Tabu search heuristic},
+abstract = {This article describes a tabu search heuristic for the dial-a-ride problem with the following characteristics. Users specify transportation requests between origins and destinations. They may provide a time window on their desired departure or arrival time. Transportation is supplied by a fleet of vehicles based at a common depot. The aim is to design a set of least cost vehicle routes capable of accommodating all requests. Side constraints relate to vehicle capacity, route duration and the maximum ride time of any user. Extensive computational results are reported on randomly generated and real-life data sets.}
+}
+
+@article{insertionjaw,
+title = {A heuristic algorithm for the multi-vehicle advance request dial-a-ride problem with time windows},
+journal = {Transportation Research Part B: Methodological},
+volume = {20},
+number = {3},
+pages = {243-257},
+year = {1986},
+issn = {0191-2615},
+doi = {https://doi.org/10.1016/0191-2615(86)90020-2},
+url = {https://www.sciencedirect.com/science/article/pii/0191261586900202},
+author = {Jang-Jei Jaw and Amedeo R. Odoni and Harilaos N. Psaraftis and Nigel H.M. Wilson},
+abstract = {A heuristic algorithm is described for a time-constrained version of the advance-request, multi-vehicle, many-to-many Dial-A-Ride Problem (DARP). The time constraints consist of upper bounds on: (1) the amount of time by which the pick-up or delivery of a customer can deviate from the desired pick-up or delivery time; (2) the time that a customer can spend riding in a vehicle. The algorithm uses a sequential insertion procedure to assign customers to vehicles and to determine a time schedule of pick-ups and deliveries for each vehicle. A flexible objective function balances the cost of providing service with the customers' preferences for pick-up and delivery times close to those requested, and for short ride times. Computational experience with the algorithm is described, including a run with a real database of 2600 customers and some 20 simultaneously active vehicles. The scenario for the application of the algorithm is also discussed in detail.}
+}
+
+@article{neighbourhoodparragh,
+title = {Variable neighborhood search for the dial-a-ride problem},
+journal = {Computers \& Operations Research},
+volume = {37},
+number = {6},
+pages = {1129-1138},
+year = {2010},
+issn = {0305-0548},
+doi = {https://doi.org/10.1016/j.cor.2009.10.003},
+url = {https://www.sciencedirect.com/science/article/pii/S030505480900241X},
+author = {Sophie N. Parragh and Karl F. Doerner and Richard F. Hartl},
+keywords = {Transportation, Dial-a-ride problem, Metaheuristic, Variable neighborhood search},
+abstract = {In dial-a-ride problems passengers have to be transported between pre-specified pickup and delivery locations under user inconvenience considerations. The problem variant considered in this paper aims at minimizing total routing costs while respecting maximum route duration limits, time windows, and maximum user ride time limits. We propose a competitive variable neighborhood search-based heuristic, using three classes of neighborhoods. The first neighborhood class uses simple swap operations tailored to the dial-a-ride problem; the second neighborhood class is based on the ejection chain idea; and the third neighborhood class exploits the existence of arcs where the vehicle load is zero, giving rise to natural sequences of requests. We report new best results for 16 out of 20 benchmark instances.}
+}
+
+
