@@ -1,6 +1,6 @@
 \chapter{User Guide}\label{app:user}
 
-This section contains information needed to run the optimization.
+This section contains the information necessary to run the optimization.
 
 The software is divided into 3 separate parts:
 
@@ -24,7 +24,7 @@ The \textit{optimization modules} requires a Julia programming language compiler
 
 \section{Generating New Instance Data}
 
-The Data used for running this thesis's experiments are available in the attachments. If you want to generate new data, two scripts are available: \textit{dataGeneratorUniform.py} and \textit{dataGeneratorCommute.py}. Both scripts can be configured using command line arguments, described in detail when running the script with \textit{-{}-help}. Running the script generates a new folder with all the needed files: the \textit{GeoJSON} file with customer requests, \textit{CSV} file with the distance matrix, \textit{CSV} file with the duration matrix and a \textit{parameters.txt} file, where the settings of the generator are stored.
+The datasets used for running this thesis's experiments are available in the attachments in the \textit{test\_data} folder. If you want to generate new datasets, two scripts are available: \textit{dataGeneratorUniform.py} and \textit{dataGeneratorCommute.py}. Both scripts can be configured using command line arguments, described in detail when running the script with \textit{-{}-help}. Running the script generates a new folder with all the needed files: the \textit{GeoJSON} file with customer requests, \textit{CSV} file with the distance matrix, \textit{CSV} file with the duration matrix and a \textit{parameters.txt} file, where the settings of the generator are stored.
 
 The script assumes that the \textit{OSRM} service runs on your local machine. If your instance runs elsewhere, you can override this with the \texttt{-{}-osrm\_url} option, e.g.
 
@@ -34,11 +34,11 @@ The script assumes that the \textit{OSRM} service runs on your local machine. If
 
 The coordinates used are sampled from public transport platforms in the given area. Note that when generating larger datasets, there must be enough unique platforms to use in that area. If the number of available platforms is lower than what is needed to sample, the generators exit with an error.
 
-The bus type(s) available from the depot are hardcoded in the script. Either change them in the code or afterwards in the generated \textit{GeoJSON} file.
+The bus type(s) available from the depot are hardcoded in the script. Either change them in the code or afterward in the generated \textit{GeoJSON} file.
 
 \section{Running the optimization algorithms}
 
-All the Julia source files are stored in the \textit{src} folder. Running the algorithms is done using the \textit{EvoDARP.jl} runner script. All the hyper-parameters and other algorithm configurations are stored in the \textit{config.yaml} file together with their descriptions. The program defaultly loads the configuration file from the \textit{src} folder, but this can be overridden with the \texttt{--config} option.
+All the Julia source files are stored in the \textit{src} folder. Running the algorithms is done using the \textit{EvoDARP.jl} runner script. All hyperparameters and other algorithm configurations are stored in the \textit{config.yaml} file together with their descriptions. The program loads the configuration file from the \textit{src} folder by default, but this can be overridden with the \texttt{--config} option.
 
 The easiest way to run the program is with the following command:
 \begin{lstlisting}[language=bash]
@@ -55,9 +55,9 @@ The command compiles the program, loads the configuration from \textit{config.ya
     julia EvoDARP.jl input_data_folder=my_data algorithm=aco number_of_runs=10 num_ants=10 num_iterations=10000
 \end{lstlisting}
 
-When running a certain optimization algorithm, all parameters from its sections must be present. If some are missing, the program stops and prints an error message describing what is missing.
+The configuration file is divided into several sections. When running a certain optimization algorithm, all parameters from its section must be present. If some are missing, the program stops and prints an error message describing what is missing.
 
-When the optimization finishes (by reaching maximum iterations or by exceeding the wall time), the runner stores in an output folder the following files:
+When the optimization finishes (by reaching maximum iterations or by exceeding the wall time), the runner stores in the output folder the following files:
 
 \begin{itemize}
     \setlength\itemsep{0pt}
@@ -71,7 +71,7 @@ The most important configuration values include the following.
 \begin{itemize}
     \setlength\itemsep{0pt}
     \item \texttt{algorithm} - which of the algorithms implemented is used for the optimization. Possible values are \textit{evolution\_stops}, \textit{evolution\_cr}, \textit{evolution\_heuristic} and \textit{aco}.
-    \item \texttt{input\_data\_folder} - the folder with the instance data. Example datasets are prepared in a \texttt{available\_datasets} dictionary and can be selected by the \textit{chosen\_dataset} parameter. To create valid instance data, use one of the data generators attached. If you want to create your own dataset, it must be stored in a folder containing three files: \textit{data.geojson} file with the customer requests, \textit{distances.csv} file with the distances in meters for all coordinate pairs and \textit{distances.csv} file with the durations in seconds for all the coordinate pairs. The \textit{GeoJSON} file must conform to the JSON schema in Figure~\ref{fig:input_json_schema}.
+    \item \texttt{input\_data\_folder} - the folder with the instance data. Example datasets are prepared in a \texttt{available\_datasets} dictionary and can be selected by the \textit{chosen\_dataset} parameter. To create valid instance data, use one of the data generators attached. If you want to use your own dataset, it must be stored in a folder containing three files: \textit{data.geojson} file with the customer requests, \textit{distances.csv} file with the distances in meters for all coordinate pairs and \textit{distances.csv} file with the durations in seconds for all the coordinate pairs. The \textit{GeoJSON} file must conform to the JSON schema in Figure~\ref{fig:input_json_schema}.
     \item \texttt{output\_data\_folder} - folder where to store the results.
     \item \texttt{logs\_frequency} - after how many iterations are the log files with best and mean fitnesses updated.
     \item \texttt{number\_of\_runs} - how many times will the algorithm run. All runs have a different random seed. Use the standard Julia \texttt{-{}-threads} command line option to run the runs in parallel.
@@ -120,7 +120,7 @@ To compare multiple experiments and plot them in one figure, use the script with
 
 With this option, the script finds all the output folders within the root folder and creates a comparison plot. Again, the plots are generated in 2 variants: with the x-axis representing generations and the x-axis representing time elapsed. The labels in the plot's legend can be set by creating a \textit{legend.txt} file in the experiment's results folder and storing the legend label in it.
 
-There are also \texttt{-{}-xlog} and \texttt{-{}-ylog} options available to set the x-axis or y-axis scale as logarithmic in the plots. For larger experiments, to reduce the size of the plots, the user can use a \texttt{-{}-compress} option. With this option, only points where the fitness has changed are plotted.
+There are also \texttt{-{}-xlog} and \texttt{-{}-ylog} options available to set the x-axis or y-axis scale as logarithmic in the plots. For larger experiments, to reduce the size of the plots, the user can use a \texttt{-{}-compress} option. With this option, only points where fitness has changed are plotted.
 
 Similarly to data generation scripts, the default \textit{OSRM} host address can be overridden with the \texttt{-{}-osrm\_url} option.
 

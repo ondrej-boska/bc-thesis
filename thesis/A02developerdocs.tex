@@ -46,13 +46,13 @@ The submutations are implemented as nested functions within the \texttt{mutation
 
 \subsubsection{Individual as separate clustering and routing}
 
-For the \textit{EVO-CR} encoding, the individual is stored in a \texttt{EvoCRIndividual} struct. The struct includes a \texttt{Vector\{Int\}} for mapping between groups and buses (routes) and a \texttt{Vector\{Int\}} for the pick up/drop off order (its length is twice the number of groups, values of the array are group's ids, each id is present exactly twice).
+For the \textit{EVO-CR} encoding, the individual is stored in a \texttt{EvoCRIndividual} struct. The struct includes a \texttt{Vector\{Int\}} for mapping of groups to buses (routes) and a \texttt{Vector\{Int\}} for the pick up/drop off order (its length is twice the number of groups, values of the array are group's ids, each id is present exactly twice).
 
 \subsubsection{Individual as clustering with heuristic routing}
 
-The individual is encoded in a single \texttt{Vector\{Int\}} defining the mapping between groups and used buses.
+The individual is encoded in a single \texttt{Vector\{Int\}} defining the mapping of groups to buses.
 
-The greedy heuristic was inspired by the implementation in \cite{Baugh1998INTRACTABILITYOT}. While the original approach worked with \textit{heuristic depth} fixed to $4$, we define it as a parameter.
+The greedy heuristic was inspired by the implementation by Baugh~et~al.~\cite{Baugh1998INTRACTABILITYOT}. While the original approach worked with \textit{heuristic depth} fixed to $4$, we define it as a parameter.
 
 \subsection{Ant colony optimization}
 

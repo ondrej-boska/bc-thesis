@@ -44,20 +44,14 @@
 % An optional dedication: you can thank whomever you wish (your supervisor,
 % consultant, who provided you with tea and pizza, etc.)
 \def\Dedication{%
-\xxx{Dedication.}
-\xxx{Computational resources were provided by the e-INFRA CZ project (ID:90254),
-supported by the Ministry of Education, Youth and Sports of the Czech Republic.}
+I would like to thank my supervisor, RNDr. Jiří Fink, Ph.D., for his guidance, patience, and helpful insights.
+
+Computational resources were provided by the e-INFRA CZ project (ID:90254), supported by the Ministry of Education, Youth and Sports of the Czech Republic.
 }
 
 % Abstract (recommended length around 80-200 words; this is not a copy of your thesis assignment!)
-\def\Abstract{%
-\xxx{Use the most precise, shortest sentences that state what problem the
-thesis addresses, how it is approached, pinpoint the exact result achieved, and
-describe the applications and significance of the results. Highlight anything
-novel that was discovered or improved by the thesis. Maximum length is 200
-words, but try to fit into 120. Abstracts are often used for deciding if
-a reviewer will be suitable for the thesis; a well-written abstract thus
-increases the probability of getting a reviewer who will like the thesis.}
+\def\Abstract{
+This thesis explores demand-responsive transport, where vehicles pick up and drop off passengers based on individual requests. We present a model of the Dial-A-Ride Problem (DARP), which uses real road networks from OpenStreetMaps. Customers ask for rides between two locations, providing their preferred departure time. The goal is to minimize both the operating cost and the customer waiting time. We implement three different encodings of an individual for genetic algorithms and three Ant Colony Optimization frameworks. We compare the results of these algorithms on our custom generated datasets.
 }
 
 % 3 to 5 keywords (recommended) separated by \sep
@@ -89,9 +83,9 @@ genetic algorithm\sep ant colony optimization\sep demand responsive transport\se
 \def\StudyProgrammeCS{Informatika}
 
 \def\ThesisKeywordsCS{%
-genetické algoritmy\sep ant colony optimization\sep poptávková doprava\sep metaheuristiky
+evoluční algoritmy\sep ant colony optimization\sep poptávková doprava\sep metaheuristiky
 }
 
 \def\AbstractCS{%
-\xxx{Abstrakt práce přeložte také do češtiny.}
+Práce se věnuje dopravě reagující na poptávku, kde vozidla vyzvedávají a vysazují pasažéry na základě individuálních požadavků. Představujeme model problému Dial-A-Ride (DARP), který využívá reálné silniční sítě z OpenStreetMaps. Cestující žádají dopravu mezi dvěma zastávkami a specifikují svůj požadovaný čas odjezdu. Cílem je minimalizovat jak provozní náklady, tak čekací dobu zákazníků. Implementujeme 3 různé kódování jedince v evolučním algoritmu a 3 frameworky Ant Colony Optimization. Výsledky těchto algoritmů porovnáváme na našich vlastních generovaných datech.
 }

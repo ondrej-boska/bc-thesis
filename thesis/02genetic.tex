@@ -1,12 +1,12 @@
 \chapter{Genetic algorithm}\label{ch:genetic}
 
-The concept of genetic algorithms to solve computationally hard problems was first presented by John Holland \cite{Holland:1992}. Starting with a \textit{population} formed with initial (in most cases random) solutions (called \textit{individuals}), \textit{crossover} and \textit{mutation} operators are applied to gradually improve the fitness score of the population and thus find the best individual overall.
+The concept of genetic algorithms to solve computationally hard problems was first presented by John Holland \cite{Holland:1992}. Starting with a \textit{population} formed with initial (in most cases random) solutions called \textit{individuals}, \textit{crossover} and \textit{mutation} operators are applied to gradually improve the fitness score of the population and thus find the best individual overall.
 
-The most essential thing when designing a specific genetic algorithm is the encoding of an individual. Based on the encoding, we need to choose the genetic operators - \textit{crossover} and \textit{mutation}. The \textit{crossover} operator takes two random individuals (\textit{parents}) from the population and uses them to create two new individuals, which combine the properties of the parents. The \textit{mutation} operator takes only one individual and makes a change within him. The change should usually be small and can be either completely random or try to improve the individual using some heuristic (called a \textit{smart mutation}). The operators are performed on an individual or pair of individuals with a given probability (so in each generation, only some individuals participate in crossover or are mutated).
+The most essential thing when designing a specific genetic algorithm is the encoding of an individual. Based on the encoding, we need to choose the genetic operators - \textit{crossover} and \textit{mutation}. The \textit{crossover} operator takes two random individuals (\textit{parents}) from the population and uses them to create two new individuals, which combine the properties of their parents. The \textit{mutation} operator takes only one individual and makes a change within him. The change should usually be small and can be either completely random or try to improve the individual using some heuristic (called a \textit{smart mutation}). The operators are performed on an individual or pair of individuals with a given probability (so in each generation, only some individuals participate in crossover or are mutated).
 
 After the operators are applied, the new population is created using the \textit{selection}. In our cases, the selection can either be a \textit{roulette wheel selection} or a \textit{tournament selection}. In the \textit{roulette wheel selection}, we randomly sample individuals from the current population, but the individuals are weighted using their fitness value. When using the \textit{tournament selection}, we take $t$ (usually 2 or 3) random individuals from the population and compare their fitness values. The best one is chosen and added to the new population. This process is repeated until the new population is fully populated.
 
-Apart from using the \textit{roulette wheel} or \textit{tournament} selection, we employ a strategy called \textit{elitism}. After the new population is sampled, we choose $n$ individuals randomly and replace them with the first $n$ best individuals from the old population. This ensures that the best individual in each population survives into the next generation.
+Apart from using the \textit{roulette wheel} or \textit{tournament} selection, we employ a strategy called \textit{elitism}. After the new population is sampled using the \textit{selection}, we choose $n$ individuals randomly and replace them with the first $n$ best individuals from the old population. This ensures that the best individual in each population survives into the next generation.
 
 \hspace{0pt}
 
@@ -48,30 +48,32 @@ We decided to use the crossover on only one of the routes for each individual. T
 
 \subsubsection{Mutation}
 
-Unlike crossover, we have many options on what mutation operators to choose. We decided to implement many of them as \textit{``submutations''} and randomly choose one at each mutation. The probability of each \textit{``submutation''} is determined by its weight, and the weights are set before an experiment as hyper-parameters.
+Unlike crossover, we have many options on what mutation operators to choose. We decided to implement multiple and randomly choose one at each mutation. The probability of each \textit{operator} is determined by its weight, and the weights are set before an experiment as hyper-parameters.
 
-The possible \textit{``submutations''} are:
+The possible \textit{operators} are:
 \begin{itemize}
     \setlength\itemsep{0pt}
     \item Delete a random stop from a randomly chosen route.
     \item Add a random stop to a randomly chosen route.
     \item Change a stop to a random one in a randomly chosen route.
     \item Reverse a random sub-route of a randomly chosen route. This is the main source of changing the stops' order.
-    \item Shuffle the routes within the solution. This can greatly impact the simulation when evaluating the fitness function since each group is picked up by the first bus (in the simulation order) that arrives at their stop at the right time. If more buses travel through the same stop, groups on that stop can be picked up by a completely different bus.
-    \item ``Smart mutation'' - depending on the quality of the individual, it either tries to add an ``unhandled'' group to a random route, or it tries to perform a swap of a group between 2 routes. In both cases, we need to insert to a route both pick-up and drop-off points. The maximum distance between these points is given as a parameter.
+    \item Shuffle the routes within the solution. This can greatly impact the simulation when evaluating the fitness function since each group is picked up by the first bus (in the simulation order) that arrives at their location at the right time. If more buses travel through the same stop, groups on that stop can be picked up by a completely different bus.
+    \item ``Smart mutation'' - depending on the quality of the individual, it either tries to add an ``unhandled'' group to a random route, or it tries to perform a swap of a group between 2 routes. In both cases, we need to insert to a route both group's pick-up and drop-off. The maximum distance between these in the route is given as a parameter.
 \end{itemize}
 
 \section{Individual as separate clustering and routing}\label{sec:evocr}
 
+The individual encoding as routes of stops is not ideal for several reasons. The crossover operator might break the solutions in datasets similar to the \textit{commute}, where the bus should first pick up a number of groups and drop them off afterward. The encoding also does only say, which stops should the routes pass, but not which groups to pick up/drop off when visiting them. If more groups are waiting at the stop at the moment the bus arrives, all of them must be picked up. We will try to fix these issues in the second encoding.
+
 \subsection{Coding of an individual}
 
-The individual consists of two parts: the mapping between a group and a route, which \textit{clusters} the groups, and the order in which the groups are picked up and dropped off.
+The individual consists of two parts: the assignment of the groups to routes, which \textit{clusters} the groups, and the order in which the groups are picked up and dropped off.
 
-The mapping is defined by an array, where the array indices represent the \textit{group identifiers} and the values represent the \textit{identifier of the route that handles the group}. The maximum number of routes is given as a parameter to limit the number of routes used.
+The groups to routes assignment is defined by an array, where the array indices represent the \textit{group identifiers} and the values represent the \textit{identifier of the route that handles the group}. The maximum number of routes is given as a parameter to limit the number of routes used.
 
 The order of pick-ups and drop-offs is defined by an array, where every group occurs twice; the first occurrence marks the pick-up, and the second marks the drop-off.
 
-To transform an individual into a solution, for each route, we first determine which groups are handled by that route, and then we construct the route by picking the group's indices in the order they are present in the individual's order-defining array. When constructing a route, if the capacity constraint would be violated by picking up the next group, we drop off groups with the earliest departure times until the bus has enough capacity to pick up the group.
+To transform an individual into a solution, for each route, we first determine which groups are handled by that route, and then we construct the route by picking the group's indices in the order they are present in the individual's order-defining array. When constructing a route, if picking up the next group would violate the capacity constraint, we drop off groups with the earliest departure times until the bus has enough capacity to pick up the group.
 
 \subsection{Initial population}
 
@@ -89,29 +91,33 @@ Mutation has multiple options for changing the individual. It can change the rou
 
 \section{Individual as only clustering with heuristic routing}\label{sec:evoh}
 
+The previous encoding of an individual comprised two parts: the clustering of the groups and the ordering of the groups within the routes. Therefore, the genetic algorithm has to optimize two objectives at once. We try to make the evolution simpler by only optimizing the group clustering, leaving the ordering to a greedy heuristic.
+
 \subsection{Coding of an individual}
 
-The individual comprises only the mapping between the groups and the routes, which is stored in an array, where the array indices represent the group identifiers and the values represent the identifier of the route that handles the group.
+The individual comprises only the assignment of the groups to routes, similarly to~\ref{sec:evocr}.
 
-To convert an individual into a solution, we first divide the groups into routes based on the individual. The order in which we handle the groups within a route is then calculated based on a greedy space-time nearest neighbor heuristic described by Baugh et al. \cite{Baugh1998INTRACTABILITYOT}.
+To convert an individual into a solution, we first divide the groups into routes based on the individual. The order in which we handle the groups within a route is then calculated based on a greedy heuristic described by Baugh et al. \cite{Baugh1998INTRACTABILITYOT}
 
-The heuristic is based on assigning a \textit{cost} to each movement, which is calculated as a weighted sum of the travel time between the stops and the
-\textit{time violation}. For pick-up nodes, the \textit{time violation} is the amount of time either the bus had to wait for the group or the group had to wait for the bus. For drop-off nodes, it is equal to the delay of the dropped-off group.
+We can think of the problem as a graph, where nodes are either group pick-ups or drop-offs. Each group corresponds to two different nodes. The edge between nodes $i$ and $j$ then marks the action of either picking up/dropping off the group corresponding to node $j$, when departing from the location corresponding to the pick-up/drop-off of group $i$.
 
-When evaluating the route, we first find $d$ ``cheapest'' possible options to travel to, where $d$ is a heuristic depth parameter. We only choose those options that would not violate any constraints defined in the section \ref{sec:solution}. For each of the options, we then try to determine the cost of the resulting route if we choose this option. We do this by evaluating the cost of a route where, for $d$ stops, we would always choose the ``cheapest'' available option. Based on the costs of these routes, we then choose the best option overall. We then repeat this process until no options are available and all groups are picked up and dropped off.
+The heuristic uses \textit{breadth-first search (BFS)} with limited breadth and depth. When evaluating the route, we first find $d$ ``cheapest'' possible options to travel to, where $d$ is a heuristic depth parameter. We only choose those options that would not violate any constraints defined in Section \ref{sec:solution}. For each of the options, we then try to determine the cost of the resulting route if we choose this option. We do this by evaluating the cost of a route where, for $d$ stops, we would always choose the ``cheapest'' option available. Based on the costs of these routes, we then select the best option overall. We then repeat this process until no options are available and all groups are picked up and dropped off.
+
+The movement cost between two nodes is calculated as a weighted sum of the travel time between the two locations and the \textit{time violation}. For pick-up nodes, the \textit{time violation} is the amount of time either the bus had to wait for the group or the group had to wait for the bus. For drop-off nodes, it is equal to the delay of the dropped-off group. For a more detailed description, see Algorithm~\ref{alg:evoh_move_cost}.
 
 \begin{algorithm}
 \caption{Move cost between nodes i and j}
 \label{alg:evoh_move_cost}
 \begin{algorithmic}
 \Require $i, j, current\_time$
-\State $travel\_time \gets durations[i, j]$
+\State $travel\_time \gets durations[NodeToCoords(i), NodeToCoords(j)]$
 \State $arrival\_time \gets current\_time + travel\_time$
+\State $group\_j \gets NodeToGroup(j)$
 \If{$j$ is a pick-up node}
-    \State $expected\_time \gets Group(j).departure\_time$
+    \State $expected\_time \gets group\_j.departure\_time$
 \Else
-    \State $group\_duration \gets durations[Group(j).start, Group(j).end]$
-    \State $expected\_time \gets Group(j).departure\_time + group\_duration$
+    \State $group\_duration \gets durations[group\_j.start, group\_j.end]$
+    \State $expected\_time \gets group\_j.departure\_time + group\_duration$
 \EndIf
 \State $tw\_viol \gets |arrival\_time - expected\_time|$
 \State \textbf{return} $w_{travel\_time} \cdot travel\_time + w_{time\_window} \cdot tw\_viol$
@@ -134,20 +140,22 @@ The mutation swaps two random groups between their routes or assigns a random ro
 
 \section{Hyperparameters}\label{sec:genetic_hyperparams}
 
-\subsection{Individual as routes of stops}
+All of the algorithms above depend on the setting of multiple hyperparameters. We use a from of a \textit{greedy grid search} to find the best settings. For example, we start by running a smaller grid search containing the probability of mutation, the probability of crossover, and the selection method. Other parameters are, at the moment, set heuristically. After finding the best values for parameters included in the grid search, we run another small grid search, usually containing one to three other hyperparameters. This is repeated for all hyperparameters.
 
-The hyper-parameter values largely influence the behavior of the algorithm. We perform a series of experimental measurements to find the best values for the final experiments.
+The values tried in the grid search are chosen from a fixed interval. For example, for the crossover probability, we try values $[0.1, 0.2, 0.3, 0.4, 0.5]$. If the best value found by the grid search lies on the edge of the interval, we repeat the search with that interval shifted.
+
+\subsection{Individual as routes of stops}
 
 \begin{figure}[b]
     \centering
     \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=\textwidth]{img/evo1_create_ind_random.pdf}
-        \caption{Randomly distributed data}
+        \caption{Uniformly distributed dataset}
         \label{fig:evo1_cind_random}
     \end{subfigure}
     \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=\textwidth]{img/evo1_create_ind_commute.pdf}
-        \caption{Long distance commute data}
+        \caption{Commute dataset}
         \label{fig:evo1_cind_commute}
     \end{subfigure}
     \caption{Individual as stops - population initialization}
@@ -155,11 +163,11 @@ The hyper-parameter values largely influence the behavior of the algorithm. We p
 \end{figure}
 
 \label{experiment_graph_description}
-We will describe the experiments on the population initialization function. For both dataset types, we conduct two experiments, one with \textit{greedy} initialization and one with \textit{random} initialization. Both datasets are made of 50 customer requests, with group sizes between 1 and 10 persons and departure times in a 2-hour window. Each experiment runs the genetic algorithm 10 times. In figure \ref{fig:evo1_create_ind}, for each experiment, the mean fitness of the 10 runs is depicted as the primary line, accompanied by the first and third quartiles represented as a translucent region. Both $x$ and $y$ axes are logarithmic.
+We describe the experiments in detail on the population initialization function. For both dataset types, we conduct two experiments, one with \textit{greedy} initialization and one with \textit{random} initialization. Both datasets are made of 50 customer requests, with group sizes between 1 and 10 persons and departure times in a 2-hour window. Each experiment runs the genetic algorithm 10 times. In figure~\ref{fig:evo1_create_ind}, for each experiment, the mean fitness of the 10 runs is depicted as the primary line, accompanied by the first and third quartiles represented as a translucent region. Both $x$ and $y$ axes are logarithmic.
 
-From the figure, we can see that for both datasets, the \textit{greedy} initialization resulted in faster convergence at the beginning. We therefore decided to use the \textit{greedy} initialization.
+From figure~\ref{fig:evo1_create_ind}, we see that for both datasets, the \textit{greedy} initialization resulted in faster convergence at the beginning. We therefore decided to use the \textit{greedy} initialization.
 
-The rest of the hyper-parameter values were chosen similarly and are shown in the table \ref{tab:evo_stops_hyperparams}.
+The rest of the hyperparameter values were chosen in a similar way and are shown in the table \ref{tab:evo_stops_hyperparams}.
 
 \begin{table}[ht]
     \centering
@@ -173,7 +181,7 @@ The rest of the hyper-parameter values were chosen similarly and are shown in th
         Reverse a route weight & 3 \\
         Add/Delete/Change a stop randomly weight & 9 \\
         Shuffle individual weight & 2 \\
-        Smart mutation maximum pick-up-drop-off distance & 20 \\
+        Smart mutation maximum pick-up-drop-off distance & 3 \\
     \end{tabular}
     \caption{Individual as stops - hyper-parameter settings}
     \label{tab:evo_stops_hyperparams}
@@ -192,7 +200,7 @@ The hyper-parameter settings for both dataset types were chosen experimentally a
         Population size & 30 \\
         Mutate route assignments probability & 0.5 \\
         Swap two groups between routes mutation probability & 0.5 \\
-        Reverse a part of the order array mutation probability & 0.7 \\ 
+        Reverse a part of the order array mutation probability & 0.7 \\
     \end{tabular}
     \caption{Individual as cluster and route - hyper-parameter settings}
     \label{tab:evo_cr_hyperparams}

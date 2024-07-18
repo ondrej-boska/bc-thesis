@@ -1,19 +1,14 @@
 \chapter{Problem description}\label{ch:problem}
-\section{Input description}
 
-The following instance data define a problem instance.
+In this chapter, we present a specific model of the \textit{DARP}. In Section~\ref{sec:inputdesc}, we describe the characteristics of the input data for our model. In Section~\ref{sec:solution}, we describe the solution to the problem and its validity. In Section~\ref{sec:objective}, the objective function is defined. In Section~\ref{sec:datageneration}, we then talk about our types of datasets and how they are generated.
 
-\begin{itemize}
-    \item Set of customer requests $R$, where every request consists of its unique identifier $id$, the earliest time of departure $t_d$ (number of seconds from the start of the simulation), group size (number of passengers in the group), coordinates of the group's departure location, and coordinates of the group's arrival location. The size of any group cannot exceed the capacity of the largest available bus.
-    \item The coordinates of the \textit{depot}
-    \item The \textit{bus type} available from the depot. The bus type must include the capacity of the bus $c$, the operational cost of the bus per kilometer $o$, and the one-time fee for using the bus $f$.
-    \item Distances between each point (in meters).
-    \item Travel times between each point (in seconds).
-\end{itemize}
+\section{Input description}\label{sec:inputdesc}
+
+The problem instance is defined by the following data. Let $R$ be the set of customer requests, and $S$ the set of all the origin and departure locations. Each request $i \in R$ contains the desired departure time $t_i$ (measured in seconds from the start of the simulation), the size of the group $s_i$, the coordinates of the origin location $o_i \in S$, and the coordinates of the destination location $a_i \in S$. The coordinates of the \textit{depot} are denoted as $D$. All buses are homogeneous with capacity $B_c$, operational cost per kilometer $B_o$, and one-time fee for using the bus $B_f$. The size of any group cannot exceed the capacity of the bus. The distances between each location are given by the function $d: S \times S \to \mathbb{R}$ in kilometers. The durations between each location are given by the function $d_t: S \times S \to \mathbb{R}$ in seconds.
 
 \section{Solution} \label{sec:solution}
 
-The solution is a set of routes. Each route is given as a list of group indices in the order the bus handles their pick-ups and drop-offs.
+The solution is a set $Z$ of routes, where each route is an ordered list of group indices in the order the bus handles their pick-ups and drop-offs.
 
 For a solution to be valid, the following constraints must hold.
 
@@ -31,44 +26,38 @@ Every route needs to start and end at the depot. Since only one is available, it
 \section{Objective function}
 \label{sec:objective}
 
-Since the goal is to minimize the costs, they form the foundation of the function. With $S$ being the solution, $r$ a route within the solution, $r_i$ the $i$th stop on the route, and $d(r_i, r_j)$ the distance between stops $r_i$ and $r_j$ in kilometers, the total operational cost of the buses is given by the equation
+Since the goal is to minimize the costs, they form the foundation of the function. With $r$ being a route within the solution $Z$, we transform it into an ordered list of locations the bus visits, including the depot. Then, with $\mathrm{r}_i \in S$ being the $i$th stop on the route, the total operational cost of the buses is given by the equation
 \begin{equation}\label{eq:objective_costs}
-    \text{operational cost} \equiv \sum_{r \in S} ( f + o \cdot \sum_{i=1}^{|r|}d(r_{i-1},r_{i}))
+    \text{operational cost} \equiv \sum_{\mathrm{r} \in Z} ( B_f + B_o \cdot \sum_{i=1}^{|r|}d(\mathrm{r}_{i-1},\mathrm{r}_{i}))
 \end{equation}
 
 
-We must also account for the group's \textit{delays} when evaluating a solution. The delay for each group is calculated as the difference between the time we drop the group off and the \textit{expected arrival time}, which is defined as the sum of the group's departure time and the travel time between the group’s departure and destination points.
+We must also account for the group's \textit{delays} when evaluating a solution. The delay for each group is calculated as the difference between the time we drop the group off and the \textit{expected arrival time}, which for group $i$ is defined as $t_i + d_t(o_i, a_i)$.
 
 We represent the ``satisfaction'' of the customers by the equation
 \begin{equation}\label{eq:objective_satisfaction}
-     \text{satisfaction cost} \equiv \sum_{g \in groups} p_t \cdot d_g^2
+     \text{satisfaction cost} \equiv p \cdot \sum_{g \in R} d_g^2
 \end{equation}
-where $p_t$ is the penalty constant for late arrival and $d_g$ is the group's delay. The group's delay is squared to penalize larger delays more. The penalty constant is a hyperparameter and depends on the priority of handling all the customers as soon as possible at the expense of higher operational costs.
+where $p$ is the penalty constant for late arrival and $d_g$ is the group's delay. The group's delay is squared to penalize larger delays more. The penalty constant is a hyperparameter and depends on the priority of handling all the customers as soon as possible at the expense of higher operational costs.
 
 The objective function is then the sum of the \textit{operational} and \textit{satisfaction} cost.
 
 \begin{equation}\label{eq:objective}
-    \sum_{r \in S} ( f + o \cdot \sum_{i=1}^{|r|}d(r_{i-1},r_{i})) + \sum_{g \in groups} p_t \cdot d_g^2
+    \sum_{r \in Z} ( B_f + B_o \cdot \sum_{i=1}^{|\mathrm{r}|}d(\mathrm{r}_{i-1},\mathrm{r}_{i})) + p \cdot \sum_{g \in R} d_g^2
 \end{equation}
 
-\section{Input data generation}
+We can see that the problem of minimizing this objective function is NP-hard, because for $p = 0$, we are solving the \textit{Capacitated Vehicle Routing Problem (CVRP)}, which is known to be NP-hard~\cite{vrpnphard}.
 
-We create our own benchmark data to compare the algorithms presented in the thesis. We have two basic dataset types, \textit{uniformly distributed} and \textit{commute}.
+\section{Input data generation} \label{sec:datageneration}
 
-Given an OpenStreetMaps area, the number of requests to generate, the maximum size of a group in a request, and the latest possible departure time of a group, the \textit{uniformly distributed} generator creates requests where departure and destination coordinates are a randomly chosen public transport platform in the given area. The departure times and group sizes are chosen randomly. The number of platforms to sample from can be limited to force multiple customers to use the same platform for departure/destination. The depot is also randomly chosen from the available platforms, and the available bus type's \textit{capacity}, \textit{operational cost per km}, and \textit{fixed cost for usage} is given as a parameter.
+There are some already existing datasets, for example the one created and used by Ropke~et.~al.~\cite{ropkebenchmark}. This dataset generates pick-up and drop-off locations in a $[0, 200] \times [0, 200]$ square, with a single depot in the center of the square. Each request has a \textit{time window} assigned to it, defining the earliest possible departure time and the latest possible arrival time. Our model, however, uses real-world coordinates and has only the departure time defined in the customer requests. Therefore, we create our own benchmark data to compare the algorithms presented in the thesis.
 
-The \textit{commute} generator generates requests similarly to the \textit{uniformly distributed generator} but takes three OpenStreetMaps areas instead, an \textit{area from}, \textit{area to}, and a \textit{depot area}. The departure coordinates are randomly chosen platforms from \textit{area from}, and destination coordinates are randomly chosen platforms from \textit{area to}. The depot coordinates are randomly chosen from the platforms in the \textit{depot area}. We can also use a \textit{two-way} parameter, which makes the generator also generate requests from \textit{area to} to \textit{area from}. The departure times for both directions are still randomly generated based on the latest possible departure time.
+We have two basic dataset types, \textit{uniformly distributed} and \textit{commute}.
 
-The customer requests are stored in \textit{GeoJSON} file, whose structure is described in detail in the attached \textit{JSON schema}.
+The \textit{uniformly distributed} data generator takes a geographical area represented in \textit{OpenStreetMaps}\footnote{\url{https://wiki.openstreetmap.org/wiki/Area}}, the number of requests to generate, the maximum size of a group in a request, and the latest possible departure time of a group. Based on these parameters, customer requests are generated, where departure and destination coordinates are randomly chosen platforms in the given area. The departure times and group sizes are chosen randomly. The number of platforms to sample from can be limited to force multiple customers to use the same platform for departure/destination. The depot is also chosen randomly from the available platforms. The bus type included in the depot can be changed in the generated file.
 
-We must also generate the \textit{distance} and \textit{duration} matrices. We use the Open Source Routing Machine (\textit{OSRM}) API \cite{luxen-vetter-2011}, which has a \textit{table service} that can generate both matrices based on a list of coordinates. The matrices are stored in separate \textit{CSV} files.
+The \textit{commute} generator works analogously to the \textit{uniformly distributed} generator but takes three areas instead: an \textit{origin area}, \textit{destination area}, and a \textit{depot area}. The departure coordinates are randomly chosen platforms from the \textit{origin area}, and the destination coordinates are randomly chosen platforms from the \textit{destination area}. The depot coordinates are randomly chosen from the platforms in the \textit{depot area}.
 
-\iffalse
+Customer requests are stored in \textit{GeoJSON} file. The use of \textit{GeoJSON} allows for simple visualization of the datasets in common geographical information systems.
 
-\section{Stuff to sort}
-
-\begin{itemize}
-    \item Since \textit{DARP} is a real-world problem, we will make some simplifications to the problem to simplify the problem's simulation. We won't constrain or penalize route lengths (we can assume that the buses can refill fuel between stops with no time penalty). We will also mostly ignore most of the needs of the bus driver, such as compulsory time breaks after driving for a certain amount of time or having limited working hours. \xxx{Probably move to the introduction}
-\end{itemize}
-
-\fi
+The \textit{distance} and \textit{duration} matrices are generated using the Open Source Routing Machine (\textit{OSRM}) API \cite{luxen-vetter-2011}, that generates both matrices from a list of coordinates. The matrices are stored in separate \textit{CSV} files.

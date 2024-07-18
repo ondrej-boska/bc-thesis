@@ -1,6 +1,6 @@
 \chapter{Ant Colony Optimization}\label{ch:aco}
 
-The \textit{Ant Colony Optimization (ACO)} algorithm is a probabilistic optimization metaheuristic first presented by Dorigo and Stützle \cite{Dorigo2010}. The original algorithm was improved by Stützle and Hoos, who created the $\mathcal{MAX}\!{-}\!\mathcal{MIN}$ Ant System ($\mathcal{MM}$AS)\cite{STUTZLE2000889}. Blum and Dorigo then refined the $\mathcal{MM}$AS framework and created the \textit{hyper-cube framework (HCF)} for \textit{ACO}\cite{HCFMMAS}. In this chapter, we will compare these 3 frameworks on the \textit{DARP}.
+The \textit{Ant Colony Optimization (ACO)} algorithm is a probabilistic optimization metaheuristic first presented by Dorigo and Stützle \cite{Dorigo2010}. The original algorithm was improved by Stützle and Hoos, who created the $\mathcal{MAX}\!{-}\!\mathcal{MIN}$ Ant System ($\mathcal{MM}$AS)\cite{STUTZLE2000889}. Blum and Dorigo then refined the $\mathcal{MM}$AS framework and created the \textit{hyper-cube framework (HCF)} for \textit{ACO}\cite{HCFMMAS}. In this chapter, we compare these 3 frameworks on the \textit{DARP}.
 
 \section{\textit{ACO} frameworks}
 
@@ -96,9 +96,9 @@ The entire framework is described in Algorithm~\ref{alg:aco_main_loop}.
 
 \section{Pheromone matrix}
 
-We represent our \textit{search space} as an oriented graph. Vertices are the group's pick-ups and drop-offs. The edges represent the traveling, e.g., the edge between the group’s $i$ drop-off and the group’s $j$ pick-up represents the path between the group’s $i$ destination point and the group’s $j$ departure point. We must also add a node for the depot. The solution is then a set of paths through the graph, where each path satisfies the constraints defined in \ref{constraints}.
+We represent our \textit{search space} as an oriented graph. Vertices are the group's pick-ups and drop-offs. The edges represent the traveling, e.g., the edge between the group’s $i$ drop-off and the group’s $j$ pick-up represents the path between the group’s $i$ destination location and the group’s $j$ departure location. We must also add a node for the depot. The solution is then a set of paths through the graph, where each path satisfies the constraints defined in \ref{constraints}.
 
-The pheromone matrix is of size $(2|G| + 1) \times (2|G| + 1)$, where $G$ is the set of all groups. For each group with id $i$, the pheromone at index $i$ represents the group's pick-up, and the pheromone at index $i + |G|$ represents the group's drop-off. The last index represents the depot.
+The pheromone matrix is of size $(2|R| + 1) \times (2|R| + 1)$, where $R$ is the set of all customer requests. For each group with id $i$, the pheromone at index $i$ represents the group's pick-up, and the pheromone at index $i + |R|$ represents the group's drop-off. The last index represents the depot.
 
 \section{Creating solutions}
 
@@ -108,12 +108,13 @@ An \textit{ant} generates new routes until all the customer requests are handled
 
 We use a simplified heuristic used in section \ref{sec:evoh}. The attractiveness is equal to a weighted sum of the travel time between the stops and the \textit{time violation} - how soon or late would the bus arrive.
 
-When considering dropping off a group, we can adjust the attractiveness with a \textit{drop-off bonus coefficient} hyperparameter. This coefficient is multiplied by the length of the current route. The whole bonus is then multiplied by the attractiveness of the drop-off nodes. This helps to drop the groups faster and, therefore, reduces delay penalties. We tried multiple variants of how this bonus could work (fixed value, first picking up multiple groups and then dropping them all off, or having different strategies for different ants). The variant $length(route) \cdot c$ worked the best with both dataset types.
+When considering dropping off a group, we can adjust the attractiveness with a \textit{drop-off bonus coefficient} hyperparameter. This coefficient is multiplied by the length of the current route. The whole bonus is then multiplied by the attractiveness of the drop-off nodes. This helps to drop the groups faster and, therefore, reduces delay penalties. We tried multiple variants of how this bonus could work (fixed value, first picking up multiple groups and then dropping them all off, or having different strategies for different ants). The variant used in Algorithm~\ref{alg:aco_attractiveness} worked the best with both dataset types.
 
 When calculating attractiveness for returning to the depot, we have no \textit{time violation} to consider in the weighted sum. Instead, we only multiply the travel time to the depot with the \textit{depot attractiveness coefficient} hyperparameter to favor or disfavor the depot and end the current route.
 
 \begin{algorithm}
 \caption{Attractiveness between nodes $i$ and $j$}
+\label{alg:aco_attractiveness}
 \begin{algorithmic}
 \Require $i, j, current\_route, current\_time$
 \If{$nnode$ is depot}
@@ -136,23 +137,23 @@ The experiments were done the same way as in the section \ref{sec:genetic_hyperp
 
 For the commute dataset, the value of the \textit{depot attractiveness coefficient} does not have much impact on the results. After dropping off all the groups in the destination area, the attractiveness of picking up any group in the source area is too low because the group would be picked up too late, while the depot attractiveness stays high. However, for the random dataset, a lower value, such as $0.1$, lowers the number of buses used. This may be because we only consider returning to the depot when the bus is empty, but we do not penalize the waiting of an empty bus. However, the attractiveness function still considers the \textit{time violation}, so if the bus were to wait for a long time, it would rather return to the depot. While we still need to account for the time violations since picking up groups with earlier departure times might be more favorable, we do not want their attractiveness to be significantly lower than the depot's attractiveness. Therefore, lowering the depot attractiveness by multiplying it with a small fixed constant works well.
 
-\begin{figure}
+\begin{figure}[ht]
     \centering
     \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=\textwidth]{img/aco_random_ab.pdf}
-        \caption{Randomly distributed data}
+        \caption{Uniformly distributed dataset}
         \label{fig:aco_ab_random}
     \end{subfigure}
     \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=\textwidth]{img/aco_commute_ab.pdf}
-        \caption{Long distance commute data}
+        \caption{Commute dataset}
         \label{fig:aco_ab_commute}
     \end{subfigure}
     \caption{Ant Colony Optimization - Alpha and Beta setting}
     \label{fig:aco_alpha_beta}
 \end{figure}
 
-\begin{table}
+\begin{table}[ht]
     \centering
     \begin{tabular}{lc}
         $\alpha$ & 1 \\
@@ -169,7 +170,7 @@ For the commute dataset, the value of the \textit{depot attractiveness coefficie
     \label{tab:aco_hyperparams}
 \end{table}
 
-\section{Comparing different Ant Systems}
+\section{Comparing different frameworks}
 
 During development, we tried different versions of \textit{ACO} frameworks - \textit{Ant System (AS)}\cite{Dorigo2010}, $\mathcal{MM}$AS\cite{STUTZLE2000889} and \textit{HCF}\cite{HCFMMAS}. A comparison of these frameworks on datasets with $50$ customer requests can be seen in Figure~\ref{fig:aco_ant_systems}. All experiments ran for 20 minutes.
 
@@ -179,16 +180,16 @@ Based on the results, we decided to use only the \textit{HCF} in the final exper
 
 \begin{figure}
     \centering
-    \begin{subfigure}[b]{0.45\textwidth}
+    \begin{subfigure}[b]{0.9\textwidth}
         \includegraphics[width=\textwidth]{img/aco_compareas_random.pdf}
-        \caption{Randomly distributed data}
+        \caption{Uniformly distributed dataset}
         \label{fig:aco_as_random}
     \end{subfigure}
-    \begin{subfigure}[b]{0.45\textwidth}
+    \begin{subfigure}[b]{0.9\textwidth}
         \includegraphics[width=\textwidth]{img/aco_compareas_commute.pdf}
-        \caption{Long distance commute data}
+        \caption{Commute dataset}
         \label{fig:aco_as_commute}
     \end{subfigure}
-    \caption{Ant Colony Optimization - Different Ant Systems}
+    \caption{Ant Colony Optimization - Different Frameworks}
     \label{fig:aco_ant_systems}
 \end{figure}
